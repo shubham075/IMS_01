@@ -45,7 +45,7 @@
       "UNKNOWN": "Something went wrong. Please try again.",
       "DUPLICATE_IDENTIFIER": "Another product already uses this barcode or code.",
       "RESTRICTED_CATEGORY": "Products in this category (for example medicines) cannot be shown to shoppers yet.",
-      "BRANCH_NOT_READY": "Pin this branch on the map before showing products to shoppers.",
+      "BRANCH_NOT_READY": "This branch is not ready yet. Check the list on the branch card.",
       "CONFIRM_REQUIRED": "This is much larger than usual. Check it and confirm.",
       "ALREADY_REVERSED": "This entry was already undone, or it is an undo itself.",
       "OPENING_ALREADY_SET": "Opening stock is already set. Use a correction to change it.",
@@ -87,7 +87,10 @@
     "unusualChars": "Remove unusual characters.",
     "unitLocked": "The unit cannot change after stock has been recorded.",
     "notCounted": "This product is not counted. Mark it in stock or out of stock instead.",
-    "counted": "This product is counted. Record stock in or out instead."
+    "counted": "This product is counted. Record stock in or out instead.",
+    "pinMissing": "Pin the branch on the map.",
+    "hoursMissing": "Set the opening hours.",
+    "noLiveProducts": "Show at least one product to shoppers."
   },
   "login": {
     "title": "Sign in to your shop",
@@ -230,7 +233,9 @@
     "stockOut": "{n} out of stock",
     "stockCheck": "{n} need a check",
     "stockOk": "Nothing needs attention.",
-    "stockOpen": "Open stock"
+    "stockOpen": "Open stock",
+    "liveTodo": "Go live: open your branch to shoppers",
+    "liveDone": "Your branch is live"
   },
   "team": {
     "title": "Your team",
@@ -498,5 +503,22 @@
     "undo": "Undo",
     "undoYes": "Yes, undo",
     "undoNo": "Keep"
+  },
+  "goLive": {
+    "title": "Not live yet",
+    "help": "Shoppers cannot see this branch until it is live. You need:",
+    "pin": "Pin the branch on the map",
+    "hours": "Set the opening hours",
+    "products": "Show at least one product ({n} shown)",
+    "done": "Done",
+    "todo": "To do",
+    "goLive": "Go live",
+    "noPermission": "Only people who manage publishing can take a branch live.",
+    "live": "Live",
+    "liveHelp": "Shoppers can find this branch ({n} products shown).",
+    "hide": "Hide from shoppers",
+    "hideConfirm": "Hide this branch and all its products from shoppers?",
+    "hideYes": "Yes, hide",
+    "hideNo": "Keep live"
   }
 }

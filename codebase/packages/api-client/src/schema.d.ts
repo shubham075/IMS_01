@@ -247,6 +247,23 @@ export interface paths {
         patch: operations["BranchesController_update"];
         trace?: never;
     };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/publication": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Go live (show this branch to shoppers) or hide it */
+        put: operations["BranchesController_setPublication"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orgs/{orgId}/categories": {
         parameters: {
             query?: never;
@@ -729,6 +746,8 @@ export interface components {
             phonePublic: string | null;
             contactOptions: ("call" | "whatsapp")[];
             isPublished: boolean;
+            /** @description Products currently shown to shoppers at this branch */
+            liveProductCount: number;
             /** @enum {string} */
             status: "active" | "inactive";
             /** Format: date-time */
@@ -782,6 +801,9 @@ export interface components {
             };
             phonePublic?: string | null;
             contactOptions?: ("call" | "whatsapp")[];
+        };
+        SetPublicationDto: {
+            isPublished: boolean;
         };
         CategoryDto_Output: {
             /** Format: uuid */
@@ -1704,6 +1726,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateBranchDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    BranchesController_setPublication: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPublicationDto"];
             };
         };
         responses: {

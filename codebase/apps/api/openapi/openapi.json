@@ -797,6 +797,71 @@
         ]
       }
     },
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/publication": {
+      "put": {
+        "operationId": "BranchesController_setPublication",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPublicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchDto_Output"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (application/problem+json)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Go live (show this branch to shoppers) or hide it",
+        "tags": [
+          "branches"
+        ]
+      }
+    },
     "/v1/merchant/orgs/{orgId}/categories": {
       "get": {
         "operationId": "ProductsController_categories",
@@ -3126,6 +3191,12 @@
           "isPublished": {
             "type": "boolean"
           },
+          "liveProductCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Products currently shown to shoppers at this branch"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -3154,6 +3225,7 @@
           "phonePublic",
           "contactOptions",
           "isPublished",
+          "liveProductCount",
           "status",
           "createdAt"
         ],
@@ -3390,6 +3462,17 @@
             }
           }
         }
+      },
+      "SetPublicationDto": {
+        "type": "object",
+        "properties": {
+          "isPublished": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isPublished"
+        ]
       },
       "CategoryDto_Output": {
         "type": "object",

@@ -74,7 +74,12 @@ export const branchSchema = z.object({
   phonePublic: z.string().nullable(),
   contactOptions: z.array(z.enum(CONTACT_OPTIONS)),
   isPublished: z.boolean(),
+  liveProductCount: z.number().int().describe("Products currently shown to shoppers at this branch"),
   status: z.enum(["active", "inactive"]),
   createdAt: isoDateTime,
 });
 export type Branch = z.infer<typeof branchSchema>;
+
+/** Go live (publish) or hide a whole branch. Going live needs a map pin, verified hours and at least one product shown. */
+export const setPublicationSchema = z.object({ isPublished: z.boolean() });
+export type SetPublication = z.infer<typeof setPublicationSchema>;

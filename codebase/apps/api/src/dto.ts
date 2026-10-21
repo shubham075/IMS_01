@@ -30,6 +30,7 @@ import {
   searchCatalogueQuerySchema,
   setIdentifiersSchema,
   setListingSchema,
+  setPublicationSchema,
   setStatusSchema,
   setThresholdSchema,
   stockLineSchema,
@@ -95,6 +96,8 @@ export class StockPageDto extends createZodDto(stockPageSchema) {}
 export class StockSummaryDto extends createZodDto(stockSummarySchema) {}
 export class MovementPageDto extends createZodDto(movementPageSchema) {}
 export class MovementResultDto extends createZodDto(movementResultSchema) {}
+
+export class SetPublicationDto extends createZodDto(setPublicationSchema) {}
 
 export class ProblemDto extends createZodDto(problemSchema) {}
 

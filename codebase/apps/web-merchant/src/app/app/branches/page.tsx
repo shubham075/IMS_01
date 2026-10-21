@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { GoLive } from "@/components/go-live";
 import { Card, Pill } from "@/components/ui";
 import { loadBranches, loadOrg, requireOrg } from "@/lib/server/dal";
 
@@ -16,6 +17,7 @@ export default async function BranchesPage() {
     getTranslations("branches"),
   ]);
   const canManage = org.permissions.includes("branch.manage");
+  const canPublish = org.permissions.includes("publication.manage") && org.status === "active";
 
   return (
     <div>
@@ -54,6 +56,7 @@ export default async function BranchesPage() {
                   </Pill>
                   <Pill>{b.isPublished ? t("public") : t("notPublic")}</Pill>
                 </div>
+                <GoLive orgId={membership.orgId} branch={b} canPublish={canPublish} />
                 {canManage && org.status === "active" && (
                   <Link href={`/app/branches/${b.id}`} className="mt-4 inline-block font-bold underline">
                     {t("edit")}

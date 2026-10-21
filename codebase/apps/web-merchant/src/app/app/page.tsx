@@ -44,6 +44,11 @@ export default async function Dashboard() {
       label: published ? t("publishDone") : t("publishTodo"),
       href: products.total > 0 ? "/app/products" : undefined,
     },
+    {
+      done: branches.some((b) => b.isPublished),
+      label: branches.some((b) => b.isPublished) ? t("liveDone") : t("liveTodo"),
+      href: "/app/branches",
+    },
   ];
   const firstName = me.user.displayName?.split(" ")[0];
 

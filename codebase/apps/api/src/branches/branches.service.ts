@@ -3,7 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { type Expression, sql } from "kysely";
 import type { OrgContext } from "../auth/auth.types";
 import { writeAudit } from "../common/audit";
-import { Errors } from "../common/errors";
+import { AppError, Errors } from "../common/errors";
 import { isoReq } from "../common/util";
 import { Db, type Trx } from "../db/db.service";
 
@@ -66,6 +66,24 @@ export class BranchesService {
   async update(org: OrgContext, userId: string, branchId: string, dto: UpdateBranch): Promise<Branch> {
     this.assertScope(org, branchId);
     return this.db.tx({ userId, orgId: org.orgId }, async (trx) => {
+      const live = await trx
+        .selectFrom("branch")
+        .select("is_published")
+        .where("org_id", "=", org.orgId)
+        .where("id", "=", branchId)
+        .executeTakeFirst();
+      if (!live) throw Errors.notFound("Branch");
+      if (live.is_published && dto.location === null)
+        throw new AppError(
+          422,
+          "BRANCH_NOT_READY",
+          "A live branch needs its map pin. Hide the branch first.",
+          {
+            errors: [
+              { path: "location", message: "A live branch needs its map pin. Hide the branch first." },
+            ],
+          },
+        );
       const patch: Record<string, unknown> = {};
       if (dto.name !== undefined) patch.name = dto.name;
       if (dto.addressLine !== undefined) patch.address_line = dto.addressLine;
@@ -99,6 +117,7 @@ export class BranchesService {
         .returning("id")
         .executeTakeFirst();
       if (!done) throw Errors.notFound("Branch");
+      if (live.is_published) await sql`SELECT refresh_public_branch(${branchId}::uuid)`.execute(trx);
       await writeAudit(trx, {
         orgId: org.orgId,
         actorUserId: userId,
@@ -107,6 +126,61 @@ export class BranchesService {
         targetId: branchId,
         meta: { fields: Object.keys(patch) },
       });
+      return this.load(trx, org.orgId, branchId);
+    });
+  }
+
+  /**
+   * Going live needs a map pin, verified opening hours and at least one product shown to shoppers. Hiding is always
+   * allowed. Either way every public row of the branch is rebuilt in the same transaction.
+   */
+  async setPublication(
+    org: OrgContext,
+    userId: string,
+    branchId: string,
+    isPublished: boolean,
+  ): Promise<Branch> {
+    this.assertScope(org, branchId);
+    return this.db.tx({ userId, orgId: org.orgId }, async (trx) => {
+      const b = await this.select(trx)
+        .where("b.org_id", "=", org.orgId)
+        .where("b.id", "=", branchId)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!b) throw Errors.notFound("Branch");
+      if (isPublished && !b.is_published) {
+        const missing: Array<{ path: string; message: string }> = [];
+        if (b.lat === null || b.lng === null)
+          missing.push({ path: "location", message: "Pin the branch on the map." });
+        if (!b.hours_verified) missing.push({ path: "hours", message: "Set the opening hours." });
+        if (Number(b.live_products) === 0)
+          missing.push({ path: "products", message: "Show at least one product to shoppers." });
+        if (b.status !== "active") missing.push({ path: "status", message: "This branch is switched off." });
+        if (missing.length)
+          throw new AppError(
+            422,
+            "BRANCH_NOT_READY",
+            `Not ready to go live: ${missing.map((m) => m.message).join(" ")}`,
+            {
+              errors: missing,
+            },
+          );
+      }
+      if (b.is_published !== isPublished) {
+        await trx
+          .updateTable("branch")
+          .set({ is_published: isPublished })
+          .where("id", "=", branchId)
+          .execute();
+        await sql`SELECT refresh_public_branch(${branchId}::uuid)`.execute(trx);
+        await writeAudit(trx, {
+          orgId: org.orgId,
+          actorUserId: userId,
+          action: isPublished ? "branch.published" : "branch.unpublished",
+          targetType: "branch",
+          targetId: branchId,
+        });
+      }
       return this.load(trx, org.orgId, branchId);
     });
   }
@@ -122,6 +196,11 @@ export class BranchesService {
       .select([
         sql<number | null>`ST_Y(b.geo::geometry)`.as("lat"),
         sql<number | null>`ST_X(b.geo::geometry)`.as("lng"),
+        sql<string>`(SELECT count(*) FROM merchant_listing l JOIN product p ON p.org_id = l.org_id AND p.id = l.product_id
+                      LEFT JOIN category c ON c.id = p.category_id
+                      WHERE l.branch_id = b.id AND l.is_published AND p.status = 'active' AND NOT COALESCE(c.restricted, false))`.as(
+          "live_products",
+        ),
       ]);
   }
 
@@ -153,6 +232,7 @@ function mapBranch(r: BranchRow): Branch {
     phonePublic: r.phone_public,
     contactOptions: r.contact_options as Branch["contactOptions"],
     isPublished: r.is_published,
+    liveProductCount: Number(r.live_products),
     status: r.status as Branch["status"],
     createdAt: isoReq(r.created_at),
   };

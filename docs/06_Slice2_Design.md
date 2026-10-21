@@ -59,7 +59,7 @@ No images (FR-CAT-12), variants, merge or platform-wide dedupe in 2a; price fres
 ## Status of 2a (built 2026-10-21)
 Done: all endpoints above, web pages (`/app/products`, `/add`, `/[id]`), dashboard checklist, EN/HI. Tests: API 115 (catalogue 18, RLS/role matrix included), schemas 37, web 28, Playwright catalogue journeys (desktop + phone).
 Deviations / gaps to remember:
-- **Branch go-live is not built yet.** `branch.is_published` has no API; products can be marked "shown" per branch, but shoppers see nothing until the branch itself is published (UI shows "Branch not public yet"). Add `PUT /branches/:id/publication` (permission `publication.manage`, needs pin + verified hours + ≥1 product) before the consumer slice.
+- **Branch go-live: built afterwards (see below).** Original gap: `branch.is_published` has no API; products can be marked "shown" per branch, but shoppers see nothing until the branch itself is published (UI shows "Branch not public yet"). Add `PUT /branches/:id/publication` (permission `publication.manage`, needs pin + verified hours + ≥1 product) before the consumer slice.
 - Offset pagination (fine at R1 sizes); switch to keyset if a shop passes ~10k products.
 - Attributes (FR-CAT-04) accepted and stored but no category schemas or UI yet; unit conversions (FR-CAT-06) have no UI yet (needed in 2b when quantities move).
 - Price-hide-after-14-days (D-10) is applied by the projection, not shown in the merchant UI.
@@ -89,3 +89,7 @@ Not in 2b: backdating beyond 30 days with an admin reason, unit conversions, sto
 | 15 | 320 requests in a minute | 429 with Retry-After |
 | 16 | A "not counted" product nobody had marked | **bug found (by the browser test):** list returned 500 (NULL boolean) → fixed |
 Not covered yet: multi-instance rate limiting (in-memory), clock-skewed devices (offline sync slice), very large catalogues (load test), screen-reader testing by a person.
+
+## Go live (built 2026-10-21)
+`PUT /merchant/orgs/:orgId/branches/:branchId/publication {isPublished}` (permission `publication.manage`, branch scope enforced). Going live needs a map pin, verified hours, an active branch and at least one product shown (restricted or switched-off products do not count); otherwise 422 `BRANCH_NOT_READY` listing what is missing (`errors[].path`: location, hours, products, status). Hiding is always allowed and keeps the per-product choices. Public rows are rebuilt in the same transaction, an audit event is written once per change, and repeating the call is harmless. A live branch cannot lose its pin (422), and edits to a live branch refresh what shoppers see. `Branch.liveProductCount` added. Web: go-live card on each branch (checklist, Go live / Hide with confirmation), dashboard checklist item.
+Tests: API 165 (go-live: readiness, audit once, hide/restore, live edits, restricted products, role matrix, branch scope, strangers 404, read-only org, bad bodies, 10 parallel flips, DB check bypass), browser 38+ (go-live journey, role limit, Hindi, phone).

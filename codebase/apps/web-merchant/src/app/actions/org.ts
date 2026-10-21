@@ -85,3 +85,21 @@ export async function updateBranchAction(
     return branch;
   });
 }
+
+export async function setPublicationAction(
+  orgId: string,
+  branchId: string,
+  isPublished: boolean,
+): Promise<ActionResult<Branch>> {
+  return run(async () => {
+    const api = await authedApi();
+    const b = await unwrap(
+      api.PUT("/v1/merchant/orgs/{orgId}/branches/{branchId}/publication", {
+        params: { path: { orgId, branchId } },
+        body: { isPublished },
+      }),
+    );
+    revalidatePath("/app", "layout");
+    return b;
+  });
+}
