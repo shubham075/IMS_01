@@ -10,6 +10,8 @@
     "infra:down": "docker compose down",
     "db:psql": "docker compose exec db psql -U postgres idea01",
     "build": "turbo run build",
+    "build:packages": "pnpm --filter @idea01/schemas build && pnpm --filter @idea01/api-client build",
+    "predev": "pnpm build:packages",
     "dev": "turbo run dev --parallel",
     "test": "turbo run test",
     "lint": "biome check .",
@@ -19,7 +21,9 @@
     "db:test": "pnpm --filter @idea01/db test",
     "db:seed": "pnpm --filter @idea01/db seed",
     "dev:api": "pnpm --filter @idea01/api dev",
+    "predev:api": "pnpm build:packages",
     "dev:web": "pnpm --filter @idea01/web-merchant dev",
+    "predev:web": "pnpm build:packages",
     "typecheck": "turbo run typecheck",
     "openapi": "pnpm --filter @idea01/api openapi && pnpm --filter @idea01/api-client generate"
   },
