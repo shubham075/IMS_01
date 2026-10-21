@@ -24,6 +24,26 @@
         "design/prototypes"
       ],
       "port": 8766
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "codebase/apps/api",
+        "start"
+      ],
+      "port": 3001
+    },
+    {
+      "name": "web-merchant",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "codebase/apps/web-merchant",
+        "dev"
+      ],
+      "port": 3000
     }
   ]
 }

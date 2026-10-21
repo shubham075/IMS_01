@@ -17,8 +17,8 @@ Chosen for this product's needs (see `../docs/FRD.md`, `../Backend_System_Design
 | Files | S3 API; **MinIO** locally | Imports, images; same code in prod (AWS S3) |
 | Web apps | **Next.js (App Router) + React** | Consumer SEO (SSR); merchant dashboard |
 | Styling | **Tailwind CSS** with the "flat bold" design tokens (`packages/ui/src/tokens.css`) | Exactly 4 colours: #242424 #F2F2E8 #DFFF00 #9B9E95 (`design/DESIGN_SYSTEM.md`) |
-| Data fetching | **TanStack Query** + **openapi-fetch** (typed from the spec) | Caching, offline-friendly, no hand-written clients |
-| Forms | **react-hook-form + Zod** | Same schemas as the backend |
+| Data fetching | **TanStack Query** + **openapi-fetch** (typed from the spec) | Caching, offline-friendly, no hand-written clients | _(Slice 1: server actions + openapi-fetch only; TanStack Query arrives with the first interactive list.)_
+| Forms | **react-hook-form + Zod** | Same schemas as the backend | _(Slice 1 uses plain controlled forms + the shared Zod schemas; not adopted yet.)_
 | i18n | **next-intl** (web), **i18next** (mobile) | EN + HI from day one (D-20) |
 | Mobile | **Expo (React Native) + expo-router** | iOS+Android from one codebase; EAS cloud builds cover iOS from Windows |
 | Mobile offline | **expo-sqlite** (queue + catalogue cache), **expo-camera** (barcode), **expo-secure-store** | Offline-first merchant app (FR-OFF) |

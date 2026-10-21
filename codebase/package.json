@@ -10,18 +10,22 @@
     "infra:down": "docker compose down",
     "db:psql": "docker compose exec db psql -U postgres idea01",
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --parallel",
     "test": "turbo run test",
     "lint": "biome check .",
     "format": "biome check --write .",
     "db:migrate": "pnpm --filter @idea01/db migrate",
     "db:reset": "pnpm --filter @idea01/db reset",
     "db:test": "pnpm --filter @idea01/db test",
-    "db:seed": "pnpm --filter @idea01/db seed"
+    "db:seed": "pnpm --filter @idea01/db seed",
+    "dev:api": "pnpm --filter @idea01/api dev",
+    "dev:web": "pnpm --filter @idea01/web-merchant dev",
+    "typecheck": "turbo run typecheck",
+    "openapi": "pnpm --filter @idea01/api openapi && pnpm --filter @idea01/api-client generate"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
     "turbo": "^2.11.9",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3"
   }
 }

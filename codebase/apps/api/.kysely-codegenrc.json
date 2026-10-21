@@ -1,0 +1,6 @@
+{
+  "dialect": "postgres",
+  "url": "postgres://postgres:postgres@localhost:5432/idea01",
+  "outFile": "src/db/types.ts",
+  "excludePattern": "(schema_migrations|spatial_ref_sys|geography_columns|geometry_columns)"
+}

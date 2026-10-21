@@ -2,3 +2,10 @@ packages:
   - "apps/*"
   - "packages/*"
   - "db"
+
+# Only these packages may run install scripts (supply-chain safety).
+allowBuilds:
+  '@scarf/scarf': false
+  '@swc/core': true
+  esbuild: true
+  '@parcel/watcher': false

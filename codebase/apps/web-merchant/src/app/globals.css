@@ -1,0 +1,79 @@
+@import "tailwindcss";
+@import "@idea01/ui/tokens.css";
+@import "leaflet/dist/leaflet.css";
+
+/*
+  Exactly four colours (design/DESIGN_SYSTEM.md). Resetting the default palette means a stray `bg-blue-500`
+  simply does not exist, so the palette rule is enforced by the build, not by discipline.
+*/
+@theme {
+  --color-*: initial;
+  --color-ink: #242424;
+  --color-paper: #f2f2e8;
+  --color-volt: #dfff00;
+  --color-grey: #9b9e95;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans:
+    "Segoe UI", system-ui, -apple-system, Roboto, "Noto Sans", "Noto Sans Devanagari", "Nirmala UI",
+    sans-serif;
+
+  --shadow-hard: 6px 6px 0 #242424;
+  --shadow-hard-md: 4px 4px 0 #242424;
+  --shadow-hard-sm: 3px 3px 0 #242424;
+  --shadow-volt: 4px 4px 0 #dfff00;
+  --radius-card: 10px;
+  --radius-control: 8px;
+  --radius-chip: 6px;
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    min-height: 100dvh;
+    line-height: 1.55;
+  }
+  h1,
+  h2,
+  h3 {
+    line-height: 1.25;
+  }
+  button,
+  [role="button"],
+  select,
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+}
+
+/* Leaflet draws its own controls: keep them inside the palette. */
+.leaflet-container {
+  font-family: var(--font-sans);
+  background: var(--color-paper);
+}
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--color-paper) 90%, transparent) !important;
+  color: var(--color-ink) !important;
+}
+.leaflet-bar a {
+  background: var(--color-paper) !important;
+  color: var(--color-ink) !important;
+  border-color: var(--color-ink) !important;
+}
+.pin-marker {
+  background: none;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
