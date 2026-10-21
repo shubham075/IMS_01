@@ -591,6 +591,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orgs/{orgId}/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Past imports */
+        get: operations["ImportsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/imports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check a CSV file. Nothing changes until it is applied. */
+        post: operations["ImportsController_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/imports/{importId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One import */
+        get: operations["ImportsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/imports/{importId}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The rows of an import and what happened to each */
+        get: operations["ImportsController_rows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/imports/{importId}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create the products and opening stock */
+        post: operations["ImportsController_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/imports/{importId}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Take the import back (only if nothing else was recorded on its products) */
+        post: operations["ImportsController_undo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orgs/{orgId}/members": {
         parameters: {
             query?: never;
@@ -1330,6 +1432,129 @@ export interface components {
                 productId: string;
                 quantity: number;
             }[];
+        };
+        ImportPageDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                branchId: string | null;
+                branchName: string | null;
+                fileName: string | null;
+                /** @enum {string} */
+                kind: "products" | "opening_stock";
+                /** @enum {string} */
+                status: "validated" | "applying" | "applied" | "failed" | "undone";
+                totalRows: number;
+                okRows: number;
+                skippedRows: number;
+                errorRows: number;
+                appliedRows: number;
+                /** Format: date-time */
+                createdAt: string;
+                appliedAt: string | null;
+                undoneAt: string | null;
+                createdByName: string | null;
+            }[];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        PreviewImportDto: {
+            /**
+             * Format: uuid
+             * @description Opening stock goes to this branch
+             */
+            branchId: string;
+            fileName?: string;
+            csv: string;
+            /**
+             * Format: uuid
+             * @description Used for rows without a category column
+             */
+            defaultCategoryId?: string;
+        };
+        ImportPreviewDto_Output: {
+            job: {
+                /** Format: uuid */
+                id: string;
+                branchId: string | null;
+                branchName: string | null;
+                fileName: string | null;
+                /** @enum {string} */
+                kind: "products" | "opening_stock";
+                /** @enum {string} */
+                status: "validated" | "applying" | "applied" | "failed" | "undone";
+                totalRows: number;
+                okRows: number;
+                skippedRows: number;
+                errorRows: number;
+                appliedRows: number;
+                /** Format: date-time */
+                createdAt: string;
+                appliedAt: string | null;
+                undoneAt: string | null;
+                createdByName: string | null;
+            };
+            recognised: {
+                column: string;
+                /** @enum {string} */
+                field: "name" | "name_hi" | "category" | "unit" | "price" | "cost" | "barcode" | "sku" | "brand" | "pack_size" | "stock";
+            }[];
+            /** @description Columns we did not recognise; they are not imported */
+            ignored: string[];
+            /** @description The first 50 rows, problems first */
+            rows: {
+                /** @description Row number in the file; the header is row 1 */
+                rowNo: number;
+                /** @enum {string} */
+                status: "pending" | "ok" | "error" | "skipped" | "applied";
+                name: string | null;
+                stock: number | null;
+                errorCode: ("MISSING_NAME" | "UNKNOWN_CATEGORY" | "BAD_UNIT" | "BAD_PRICE" | "BAD_STOCK" | "BAD_BARCODE" | "BAD_SKU" | "TOO_LONG" | "FORMULA" | "DUPLICATE_IN_FILE" | "ALREADY_EXISTS" | "INVALID") | null;
+                field: string | null;
+                /** @description The value or the other row that caused the problem */
+                detail: string | null;
+                existingProductId: string | null;
+            }[];
+        };
+        ImportJobDto_Output: {
+            /** Format: uuid */
+            id: string;
+            branchId: string | null;
+            branchName: string | null;
+            fileName: string | null;
+            /** @enum {string} */
+            kind: "products" | "opening_stock";
+            /** @enum {string} */
+            status: "validated" | "applying" | "applied" | "failed" | "undone";
+            totalRows: number;
+            okRows: number;
+            skippedRows: number;
+            errorRows: number;
+            appliedRows: number;
+            /** Format: date-time */
+            createdAt: string;
+            appliedAt: string | null;
+            undoneAt: string | null;
+            createdByName: string | null;
+        };
+        ImportRowPageDto_Output: {
+            items: {
+                /** @description Row number in the file; the header is row 1 */
+                rowNo: number;
+                /** @enum {string} */
+                status: "pending" | "ok" | "error" | "skipped" | "applied";
+                name: string | null;
+                stock: number | null;
+                errorCode: ("MISSING_NAME" | "UNKNOWN_CATEGORY" | "BAD_UNIT" | "BAD_PRICE" | "BAD_STOCK" | "BAD_BARCODE" | "BAD_SKU" | "TOO_LONG" | "FORMULA" | "DUPLICATE_IN_FILE" | "ALREADY_EXISTS" | "INVALID") | null;
+                field: string | null;
+                /** @description The value or the other row that caused the problem */
+                detail: string | null;
+                existingProductId: string | null;
+            }[];
+            total: number;
+            limit: number;
+            offset: number;
         };
         MemberDto_Output: {
             /** Format: uuid */
@@ -2736,6 +2961,201 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TransferDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ImportsController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPageDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ImportsController_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewImportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreviewDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ImportsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJobDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ImportsController_rows: {
+        parameters: {
+            query?: {
+                status?: "ok" | "error" | "skipped" | "applied";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                importId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRowPageDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ImportsController_apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJobDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ImportsController_undo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJobDto_Output"];
                 };
             };
             /** @description Error (application/problem+json) */

@@ -8,7 +8,13 @@ import {
   createOrgSchema,
   createProductSchema,
   createTransferSchema,
+  importJobSchema,
+  importPageSchema,
+  importPreviewSchema,
+  importRowPageSchema,
   invitationSchema,
+  listImportRowsQuerySchema,
+  listImportsQuerySchema,
   listMovementsQuerySchema,
   listProductsQuerySchema,
   listStockQuerySchema,
@@ -23,6 +29,7 @@ import {
   otpRequestResponseSchema,
   otpRequestSchema,
   otpVerifySchema,
+  previewImportSchema,
   problemSchema,
   productDetailSchema,
   productPageSchema,
@@ -111,6 +118,14 @@ export class ReceiveTransferDto extends createZodDto(receiveTransferSchema) {}
 export class ListTransfersQueryDto extends createZodDto(listTransfersQuerySchema) {}
 export class TransferDetailDto extends createZodDto(transferDetailSchema) {}
 export class TransferPageDto extends createZodDto(transferPageSchema) {}
+
+export class PreviewImportDto extends createZodDto(previewImportSchema) {}
+export class ImportJobDto extends createZodDto(importJobSchema) {}
+export class ImportPreviewDto extends createZodDto(importPreviewSchema) {}
+export class ImportRowPageDto extends createZodDto(importRowPageSchema) {}
+export class ImportPageDto extends createZodDto(importPageSchema) {}
+export class ListImportRowsQueryDto extends createZodDto(listImportRowsQuerySchema) {}
+export class ListImportsQueryDto extends createZodDto(listImportsQuerySchema) {}
 
 export class ProblemDto extends createZodDto(problemSchema) {}
 

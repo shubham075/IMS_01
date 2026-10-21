@@ -40,6 +40,9 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         <NavLink href="/app/stock">{t("console.nav.stock")}</NavLink>
         {branches.length >= 2 && <NavLink href="/app/transfers">{t("console.nav.transfers")}</NavLink>}
         <NavLink href="/app/branches">{t("console.nav.branches")}</NavLink>
+        {org.permissions.includes("import.run") && (
+          <NavLink href="/app/import">{t("console.nav.import")}</NavLink>
+        )}
         {canManageTeam && <NavLink href="/app/team">{t("console.nav.team")}</NavLink>}
       </nav>
 

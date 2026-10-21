@@ -13,6 +13,7 @@ import { ConfigModule } from "./config/config.module";
 import { ENV, type Env } from "./config/env";
 import { DbModule } from "./db/db.module";
 import { HealthController } from "./health/health.controller";
+import { ImportsModule } from "./imports/imports.module";
 import { MeModule } from "./me/me.module";
 import { MembersModule } from "./members/members.module";
 import { OrgsModule } from "./orgs/orgs.module";
@@ -56,6 +57,7 @@ export function createAppModule(testEnv?: Record<string, string>) {
       CatalogueModule,
       StockModule,
       TransfersModule,
+      ImportsModule,
       MembersModule,
     ],
     controllers: [HealthController],

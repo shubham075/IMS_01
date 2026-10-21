@@ -23,6 +23,8 @@ const config: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
   // End-to-end tests build into their own folder so they can run while the dev server is open.
+  // CSV imports travel as text through a server action (the API accepts up to 1 MB).
+  experimental: { serverActions: { bodySizeLimit: "2mb" } },
   distDir: process.env.NEXT_DIST_DIR || ".next",
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

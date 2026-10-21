@@ -3,6 +3,9 @@ import { ApiError, unwrap } from "@idea01/api-client";
 import type {
   Branch,
   Category,
+  ImportJob,
+  ImportPage,
+  ImportRowPage,
   Invitation,
   ListProductsQuery,
   Member,
@@ -159,5 +162,33 @@ export async function loadTransfer(orgId: string, transferId: string): Promise<T
   const api = await authedApi();
   return unwrap(
     api.GET("/v1/merchant/orgs/{orgId}/transfers/{transferId}", { params: { path: { orgId, transferId } } }),
+  );
+}
+
+export async function loadImports(
+  orgId: string,
+  query: { limit?: number; offset?: number },
+): Promise<ImportPage> {
+  const api = await authedApi();
+  return unwrap(api.GET("/v1/merchant/orgs/{orgId}/imports", { params: { path: { orgId }, query } }));
+}
+
+export async function loadImport(orgId: string, importId: string): Promise<ImportJob> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/imports/{importId}", { params: { path: { orgId, importId } } }),
+  );
+}
+
+export async function loadImportRows(
+  orgId: string,
+  importId: string,
+  query: { status?: string; limit?: number; offset?: number },
+): Promise<ImportRowPage> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/imports/{importId}/rows", {
+      params: { path: { orgId, importId }, query: query as Record<string, string | number | undefined> },
+    }),
   );
 }
