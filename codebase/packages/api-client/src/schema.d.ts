@@ -247,6 +247,127 @@ export interface paths {
         patch: operations["BranchesController_update"];
         trace?: never;
     };
+    "/v1/merchant/orgs/{orgId}/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Product categories */
+        get: operations["ProductsController_categories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/catalogue/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search the shared catalogue */
+        get: operations["ProductsController_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your products */
+        get: operations["ProductsController_list"];
+        put?: never;
+        /** Add a custom product */
+        post: operations["ProductsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/products/from-catalogue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a product from the shared catalogue */
+        post: operations["ProductsController_fromCatalogue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/products/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One product */
+        get: operations["ProductsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit a product, or switch it on/off */
+        patch: operations["ProductsController_update"];
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/products/{productId}/identifiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a product's barcodes, product codes and search names */
+        put: operations["ProductsController_setIdentifiers"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/products/{productId}/listings/{branchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Show or hide a product to shoppers at one branch */
+        put: operations["ProductsController_setListing"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orgs/{orgId}/members": {
         parameters: {
             query?: never;
@@ -353,10 +474,12 @@ export interface components {
             title: string;
             status: number;
             /** @enum {string} */
-            code: "VALIDATION_FAILED" | "UNIT_NOT_CONVERTIBLE" | "QTY_NOT_INTEGRAL" | "DATE_OUT_OF_RANGE" | "AUTH_REQUIRED" | "TOKEN_EXPIRED" | "TOKEN_REVOKED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_LOCKED" | "PERMISSION_DENIED" | "BRANCH_OUT_OF_SCOPE" | "ENTITLEMENT_REQUIRED" | "ACCOUNT_SUSPENDED" | "STEP_UP_REQUIRED" | "TERMS_REQUIRED" | "NOT_FOUND" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_IN_PROGRESS" | "VERSION_CONFLICT" | "DUPLICATE" | "LAST_OWNER" | "PRODUCT_INACTIVE" | "CLIENT_UPGRADE_REQUIRED" | "RATE_LIMITED" | "OTP_SEND_LIMIT" | "OTP_DELIVERY_FAILED" | "DEPENDENCY_UNAVAILABLE" | "INTERNAL_ERROR";
+            code: "VALIDATION_FAILED" | "UNIT_NOT_CONVERTIBLE" | "QTY_NOT_INTEGRAL" | "DATE_OUT_OF_RANGE" | "AUTH_REQUIRED" | "TOKEN_EXPIRED" | "TOKEN_REVOKED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_LOCKED" | "PERMISSION_DENIED" | "BRANCH_OUT_OF_SCOPE" | "ENTITLEMENT_REQUIRED" | "ACCOUNT_SUSPENDED" | "STEP_UP_REQUIRED" | "TERMS_REQUIRED" | "NOT_FOUND" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_IN_PROGRESS" | "VERSION_CONFLICT" | "DUPLICATE" | "DUPLICATE_IDENTIFIER" | "RESTRICTED_CATEGORY" | "BRANCH_NOT_READY" | "LAST_OWNER" | "PRODUCT_INACTIVE" | "CLIENT_UPGRADE_REQUIRED" | "RATE_LIMITED" | "OTP_SEND_LIMIT" | "OTP_DELIVERY_FAILED" | "DEPENDENCY_UNAVAILABLE" | "INTERNAL_ERROR";
             detail?: string;
             trace_id?: string;
             retry_after?: number;
+            /** @description Id of the record that already exists (duplicate errors) */
+            existing_id?: string;
             errors?: {
                 path: string;
                 message: string;
@@ -556,6 +679,188 @@ export interface components {
             };
             phonePublic?: string | null;
             contactOptions?: ("call" | "whatsapp")[];
+        };
+        CategoryDto_Output: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            nameEn: string;
+            nameHi: string | null;
+            restricted: boolean;
+        };
+        CanonicalProductDto_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            brand: string | null;
+            barcode: string | null;
+            categoryId: string | null;
+            alreadyAddedProductId: string | null;
+        };
+        ProductPageDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameHi: string | null;
+                brand: string | null;
+                model: string | null;
+                description: string | null;
+                categoryId: string | null;
+                unit: string;
+                allowFraction: boolean;
+                packSize: string | null;
+                attrs: {
+                    [key: string]: unknown;
+                };
+                /** @enum {string} */
+                trackingMode: "quantity" | "status_only";
+                lowStockThreshold: number;
+                pricePaise: number | null;
+                /** @description Only for people who can edit the catalogue */
+                costPaise: number | null;
+                /** @enum {string} */
+                status: "active" | "inactive" | "merged";
+                canonicalId: string | null;
+                identifiers: {
+                    /** @enum {string} */
+                    kind: "barcode" | "sku" | "alias" | "short_code";
+                    value: string;
+                }[];
+                shortCode: string | null;
+                /** @description Branches where shoppers can see this product */
+                publishedBranchCount: number;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        CreateProductDto: {
+            name: string;
+            nameHi?: string;
+            brand?: string;
+            model?: string;
+            description?: string;
+            /** Format: uuid */
+            categoryId: string;
+            /**
+             * @default pcs
+             * @enum {string}
+             */
+            unit: "pcs" | "box" | "pack" | "dozen" | "kg" | "g" | "litre" | "ml" | "m";
+            packSize?: string;
+            attrs?: {
+                [key: string]: string | number | boolean;
+            };
+            /**
+             * @default quantity
+             * @enum {string}
+             */
+            trackingMode: "quantity" | "status_only";
+            /** @default 0 */
+            lowStockThreshold: number;
+            pricePaise?: number | null;
+            costPaise?: number | null;
+            barcode?: string;
+            sku?: string;
+        };
+        ProductDetailDto_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            nameHi: string | null;
+            brand: string | null;
+            model: string | null;
+            description: string | null;
+            categoryId: string | null;
+            unit: string;
+            allowFraction: boolean;
+            packSize: string | null;
+            attrs: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            trackingMode: "quantity" | "status_only";
+            lowStockThreshold: number;
+            pricePaise: number | null;
+            /** @description Only for people who can edit the catalogue */
+            costPaise: number | null;
+            /** @enum {string} */
+            status: "active" | "inactive" | "merged";
+            canonicalId: string | null;
+            identifiers: {
+                /** @enum {string} */
+                kind: "barcode" | "sku" | "alias" | "short_code";
+                value: string;
+            }[];
+            shortCode: string | null;
+            /** @description Branches where shoppers can see this product */
+            publishedBranchCount: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            listings: {
+                /** Format: uuid */
+                branchId: string;
+                branchName: string;
+                isPublished: boolean;
+                showPrice: boolean;
+                pricePaise: number | null;
+                temporarilyUnavailable: boolean;
+            }[];
+        };
+        AddFromCatalogueDto: {
+            /** Format: uuid */
+            canonicalId: string;
+            /**
+             * @default pcs
+             * @enum {string}
+             */
+            unit: "pcs" | "box" | "pack" | "dozen" | "kg" | "g" | "litre" | "ml" | "m";
+            pricePaise?: number | null;
+        };
+        UpdateProductDto: {
+            name?: string;
+            nameHi?: string | null;
+            brand?: string | null;
+            model?: string | null;
+            description?: string | null;
+            /** Format: uuid */
+            categoryId?: string;
+            /** @enum {string} */
+            unit?: "pcs" | "box" | "pack" | "dozen" | "kg" | "g" | "litre" | "ml" | "m";
+            packSize?: string | null;
+            attrs?: {
+                [key: string]: string | number | boolean;
+            };
+            /** @enum {string} */
+            trackingMode?: "quantity" | "status_only";
+            lowStockThreshold?: number;
+            pricePaise?: number | null;
+            costPaise?: number | null;
+            /** @enum {string} */
+            status?: "active" | "inactive";
+        };
+        SetIdentifiersDto: {
+            /** @default [] */
+            barcodes: string[];
+            /** @default [] */
+            skus: string[];
+            /** @default [] */
+            aliases: string[];
+        };
+        SetListingDto: {
+            isPublished: boolean;
+            /** @default false */
+            showPrice: boolean;
+            pricePaise?: number | null;
+            /** @default false */
+            temporarilyUnavailable: boolean;
         };
         MemberDto_Output: {
             /** Format: uuid */
@@ -1143,6 +1448,311 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BranchDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_categories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto_Output"][];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_search: {
+        parameters: {
+            query: {
+                q: string;
+                categoryId?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CanonicalProductDto_Output"][];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_list: {
+        parameters: {
+            query?: {
+                q?: string;
+                categoryId?: string;
+                status?: "active" | "inactive" | "all";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductPageDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProductDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_fromCatalogue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddFromCatalogueDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProductDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_setIdentifiers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetIdentifiersDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ProductsController_setListing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetListingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto_Output"];
                 };
             };
             /** @description Error (application/problem+json) */

@@ -32,6 +32,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         <NavLink href="/app" exact>
           {t("console.nav.home")}
         </NavLink>
+        <NavLink href="/app/products">{t("console.nav.products")}</NavLink>
         <NavLink href="/app/branches">{t("console.nav.branches")}</NavLink>
         {canManageTeam && <NavLink href="/app/team">{t("console.nav.team")}</NavLink>}
       </nav>

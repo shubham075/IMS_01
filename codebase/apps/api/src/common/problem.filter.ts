@@ -38,11 +38,13 @@ export class ProblemFilter implements ExceptionFilter {
     let detail: string | undefined = "Something went wrong on our side. Please try again.";
     let errors: FieldIssue[] | undefined;
     let retryAfter: number | undefined;
+    let existingId: string | undefined;
 
     if (exception instanceof AppError) {
       ({ status, code, title, detail } = exception);
       errors = exception.extra.errors;
       retryAfter = exception.extra.retryAfter;
+      existingId = exception.extra.existingId;
     } else if (exception instanceof ZodValidationException) {
       status = 400;
       code = "VALIDATION_FAILED";
@@ -75,6 +77,7 @@ export class ProblemFilter implements ExceptionFilter {
       trace_id: traceId,
       ...(retryAfter !== undefined ? { retry_after: retryAfter } : {}),
       ...(errors?.length ? { errors } : {}),
+      ...(existingId ? { existing_id: existingId } : {}),
     };
     if (retryAfter !== undefined) reply.header("retry-after", String(retryAfter));
     reply.status(status).header("content-type", "application/problem+json; charset=utf-8").send(body);

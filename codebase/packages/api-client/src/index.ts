@@ -11,6 +11,7 @@ export class ApiError extends Error {
   readonly code: ErrorCode | "NETWORK_ERROR";
   readonly traceId?: string;
   readonly retryAfter?: number;
+  readonly existingId?: string;
   readonly fieldErrors: Record<string, string>;
 
   constructor(problem: Partial<Problem> & { status: number }, code?: ErrorCode | "NETWORK_ERROR") {
@@ -19,6 +20,7 @@ export class ApiError extends Error {
     this.code = code ?? problem.code ?? "INTERNAL_ERROR";
     this.traceId = problem.trace_id;
     this.retryAfter = problem.retry_after;
+    this.existingId = problem.existing_id;
     this.fieldErrors = Object.fromEntries((problem.errors ?? []).map((e) => [e.path, e.message]));
   }
 }

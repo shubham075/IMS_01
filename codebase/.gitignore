@@ -10,3 +10,4 @@ coverage/
 .next-e2e/
 test-results/
 playwright-report/
+*.tsbuildinfo

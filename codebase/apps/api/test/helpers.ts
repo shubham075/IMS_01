@@ -44,7 +44,7 @@ export class Client {
   ) {}
 
   async call<T = Json>(
-    method: "GET" | "POST" | "PATCH" | "DELETE",
+    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
     url: string,
     body?: unknown,
     headers: Record<string, string> = {},
@@ -67,6 +67,7 @@ export class Client {
   post = <T = Json>(url: string, body?: unknown, h?: Record<string, string>) =>
     this.call<T>("POST", url, body, h);
   patch = <T = Json>(url: string, body?: unknown) => this.call<T>("PATCH", url, body);
+  put = <T = Json>(url: string, body?: unknown) => this.call<T>("PUT", url, body);
   del = <T = Json>(url: string) => this.call<T>("DELETE", url);
 
   /** Full login: ask for a code, verify it, accept the terms. */

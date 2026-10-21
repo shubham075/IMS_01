@@ -1,6 +1,16 @@
 import "server-only";
 import { ApiError, unwrap } from "@idea01/api-client";
-import type { Branch, Invitation, Member, MeResponse, Org } from "@idea01/schemas";
+import type {
+  Branch,
+  Category,
+  Invitation,
+  ListProductsQuery,
+  Member,
+  MeResponse,
+  Org,
+  ProductDetail,
+  ProductPage,
+} from "@idea01/schemas";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
@@ -70,4 +80,25 @@ export async function loadTeam(orgId: string): Promise<{ members: Member[]; invi
     unwrap(api.GET("/v1/merchant/orgs/{orgId}/invitations", { params: { path: { orgId } } })),
   ]);
   return { members, invitations };
+}
+
+export const loadCategories = cache(async (orgId: string): Promise<Category[]> => {
+  const api = await authedApi();
+  return unwrap(api.GET("/v1/merchant/orgs/{orgId}/categories", { params: { path: { orgId } } }));
+});
+
+export async function loadProducts(orgId: string, query: Partial<ListProductsQuery>): Promise<ProductPage> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/products", {
+      params: { path: { orgId }, query: query as Record<string, string | number | undefined> },
+    }),
+  );
+}
+
+export async function loadProduct(orgId: string, productId: string): Promise<ProductDetail> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/products/{productId}", { params: { path: { orgId, productId } } }),
+  );
 }

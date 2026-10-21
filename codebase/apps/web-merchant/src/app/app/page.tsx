@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Banner, Card, Pill } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { loadBranches, loadOrg, requireOrg } from "@/lib/server/dal";
+import { loadBranches, loadOrg, loadProducts, requireOrg } from "@/lib/server/dal";
 
 export async function generateMetadata() {
   const t = await getTranslations("console.nav");
@@ -11,11 +11,13 @@ export async function generateMetadata() {
 
 export default async function Dashboard() {
   const { me, membership } = await requireOrg();
-  const [org, branches, t] = await Promise.all([
+  const [org, branches, products, t] = await Promise.all([
     loadOrg(membership.orgId),
     loadBranches(membership.orgId),
+    loadProducts(membership.orgId, { status: "all", limit: 100 }),
     getTranslations("dashboard"),
   ]);
+  const published = products.items.some((p) => p.publishedBranchCount > 0);
   const located = branches.some((b) => b.location && b.hoursVerified);
   const items: Array<{ done: boolean; label: string; href?: string }> = [
     { done: true, label: t("shopDone") },
@@ -24,8 +26,21 @@ export default async function Dashboard() {
       label: located ? t("locationDone") : t("locationTodo"),
       href: branches[0] ? `/app/branches/${branches[0].id}` : "/app/branches/new",
     },
-    { done: false, label: t("productsTodo") },
-    { done: false, label: t("publishTodo") },
+    {
+      done: products.total > 0,
+      label:
+        products.total === 1
+          ? t("productsDoneOne")
+          : products.total > 1
+            ? t("productsDone", { n: products.total })
+            : t("productsTodo"),
+      href: "/app/products/add",
+    },
+    {
+      done: published,
+      label: published ? t("publishDone") : t("publishTodo"),
+      href: products.total > 0 ? "/app/products" : undefined,
+    },
   ];
   const firstName = me.user.displayName?.split(" ")[0];
 

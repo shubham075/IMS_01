@@ -1,4 +1,15 @@
 import {
+  addFromCatalogueSchema,
+  canonicalProductSchema,
+  categorySchema,
+  createProductSchema,
+  listProductsQuerySchema,
+  productDetailSchema,
+  productPageSchema,
+  searchCatalogueQuerySchema,
+  setIdentifiersSchema,
+  setListingSchema,
+  updateProductSchema,
   branchSchema,
   createBranchSchema,
   createInvitationSchema,
@@ -49,6 +60,18 @@ export class MemberDto extends createZodDto(memberSchema) {}
 export class UpdateMemberDto extends createZodDto(updateMemberSchema) {}
 export class CreateInvitationDto extends createZodDto(createInvitationSchema) {}
 export class InvitationDto extends createZodDto(invitationSchema) {}
+
+export class CategoryDto extends createZodDto(categorySchema) {}
+export class CanonicalProductDto extends createZodDto(canonicalProductSchema) {}
+export class CreateProductDto extends createZodDto(createProductSchema) {}
+export class UpdateProductDto extends createZodDto(updateProductSchema) {}
+export class AddFromCatalogueDto extends createZodDto(addFromCatalogueSchema) {}
+export class SetIdentifiersDto extends createZodDto(setIdentifiersSchema) {}
+export class SetListingDto extends createZodDto(setListingSchema) {}
+export class ListProductsQueryDto extends createZodDto(listProductsQuerySchema) {}
+export class SearchCatalogueQueryDto extends createZodDto(searchCatalogueQuerySchema) {}
+export class ProductDetailDto extends createZodDto(productDetailSchema) {}
+export class ProductPageDto extends createZodDto(productPageSchema) {}
 
 export class ProblemDto extends createZodDto(problemSchema) {}
 

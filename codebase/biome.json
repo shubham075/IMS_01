@@ -6,6 +6,8 @@
       "!**/node_modules",
       "!**/dist",
       "!**/.next",
+      "!**/.next-e2e",
+      "!**/test-results",
       "!**/.turbo",
       "!**/coverage",
       "!**/openapi.json",

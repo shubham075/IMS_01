@@ -26,7 +26,7 @@ export class AppError extends Error {
     readonly status: number,
     readonly code: ErrorCode,
     readonly detail?: string,
-    readonly extra: { retryAfter?: number; errors?: FieldIssue[] } = {},
+    readonly extra: { retryAfter?: number; errors?: FieldIssue[]; existingId?: string } = {},
   ) {
     super(detail ?? code);
     this.title = TITLES[status] ?? "Error";
@@ -64,6 +64,11 @@ export const Errors = {
   /** Also used when a resource exists but belongs to another tenant: never reveal that it exists. */
   notFound: (what = "Resource") => new AppError(404, "NOT_FOUND", `${what} not found.`),
   duplicate: (detail: string) => new AppError(409, "DUPLICATE", detail),
+  duplicateIdentifier: (what: string, existingId: string) =>
+    new AppError(409, "DUPLICATE_IDENTIFIER", `Another product already uses this ${what}.`, { existingId }),
+  restrictedCategory: () =>
+    new AppError(422, "RESTRICTED_CATEGORY", "Products in this category cannot be shown to shoppers."),
+  branchNotReady: (detail: string) => new AppError(422, "BRANCH_NOT_READY", detail),
   conflict: (detail: string) => new AppError(409, "VERSION_CONFLICT", detail),
   lastOwner: () => new AppError(409, "LAST_OWNER", "An organisation must keep at least one owner."),
   idempotencyReused: () =>

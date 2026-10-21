@@ -18,6 +18,17 @@ const RULES: Array<[RegExp, string, ((m: RegExpExecArray) => string)?]> = [
   [/^Closing time must be after opening time for (\w+)\.$/, "hoursOrder", (m) => m[1]!],
   [/^Time slots overlap on (\w+)\.$/, "hoursOverlap", (m) => m[1]!],
   [/^Use HH:MM \(24-hour\)\.$/, "timeFormat"],
+  [/^Enter the product name \(at least 2 letters\)\.$/, "productName"],
+  [/^Product name is too long\.$/, "productNameLong"],
+  [/^Price cannot be negative\.$/, "priceNegative"],
+  [/^Price is too high\.$/, "priceHigh"],
+  [/^Enter a whole number of paise\.$/, "priceFormat"],
+  [/^Barcode must be 4–32 letters or digits\.$/, "barcode"],
+  [/^Product code can use letters, digits and \. _ \/ - \(max 40\)\.$/, "sku"],
+  [/^Invalid UUID.*$/, "chooseCategory"],
+  [/^Choose a category from the list\.$/, "chooseCategory"],
+  [/^Turn the product on before showing it to shoppers\.$/, "productOff"],
+  [/^Type something to search\.$/, "searchEmpty"],
   [/^Invalid input.*$/, "required"],
 ];
 

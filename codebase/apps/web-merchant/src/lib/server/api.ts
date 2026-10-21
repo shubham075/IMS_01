@@ -17,7 +17,12 @@ export function apiClient(accessToken?: string): ApiClient {
     // when the API answers 401, which would hide errors such as a wrong OTP behind a fake network error.
     fetch: async (request) => {
       const body = request.body ? await request.arrayBuffer() : undefined;
-      return fetch(request.url, { method: request.method, headers: request.headers, body, cache: "no-store" });
+      return fetch(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body,
+        cache: "no-store",
+      });
     },
   });
 }

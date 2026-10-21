@@ -5,6 +5,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from "nestjs-zod";
 import { AuthGuard } from "./auth/auth.guard";
 import { AuthModule } from "./auth/auth.module";
 import { BranchesModule } from "./branches/branches.module";
+import { CatalogueModule } from "./catalogue/catalogue.module";
 import { IdempotencyInterceptor } from "./common/idempotency.interceptor";
 import { ProblemFilter } from "./common/problem.filter";
 import { ThrottleGuard } from "./common/throttle.guard";
@@ -50,6 +51,7 @@ export function createAppModule(testEnv?: Record<string, string>) {
       MeModule,
       OrgsModule,
       BranchesModule,
+      CatalogueModule,
       MembersModule,
     ],
     controllers: [HealthController],

@@ -23,6 +23,9 @@ export const ERROR_CODES = [
   "IDEMPOTENCY_IN_PROGRESS",
   "VERSION_CONFLICT",
   "DUPLICATE",
+  "DUPLICATE_IDENTIFIER",
+  "RESTRICTED_CATEGORY",
+  "BRANCH_NOT_READY",
   "LAST_OWNER",
   "PRODUCT_INACTIVE",
   "CLIENT_UPGRADE_REQUIRED",
@@ -43,6 +46,7 @@ export const problemSchema = z.object({
   detail: z.string().optional(),
   trace_id: z.string().optional(),
   retry_after: z.number().int().optional(),
+  existing_id: z.string().optional().describe("Id of the record that already exists (duplicate errors)"),
   errors: z
     .array(z.object({ path: z.string(), message: z.string(), code: z.string().optional() }))
     .optional(),

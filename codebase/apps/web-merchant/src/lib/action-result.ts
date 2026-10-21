@@ -10,6 +10,7 @@ export type ActionResult<T = null> =
       message: string;
       fieldErrors?: Record<string, string>;
       retryAfter?: number;
+      existingId?: string;
       traceId?: string;
     };
 
@@ -23,6 +24,7 @@ export function failFromError(err: unknown): ActionResult<never> {
       message: err.message,
       fieldErrors: err.fieldErrors,
       retryAfter: err.retryAfter,
+      existingId: err.existingId,
       traceId: err.traceId,
     };
   }

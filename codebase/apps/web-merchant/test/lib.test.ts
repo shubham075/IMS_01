@@ -5,6 +5,7 @@ import { failFromError, failFromZod } from "@/lib/action-result";
 import { errorText } from "@/lib/error-text";
 import { clean, localizedErrors } from "@/lib/form";
 import { defaultHours, hoursFromApi, hoursToApi } from "@/lib/hours";
+import { formatRupees, paiseToInput, parseRupees, splitList } from "@/lib/money";
 import { validationText } from "@/lib/validation-text";
 import en from "../messages/en.json";
 import hi from "../messages/hi.json";
@@ -130,5 +131,39 @@ describe("opening hours", () => {
   it("shows defaults when nothing was saved yet", () => {
     expect(hoursFromApi(undefined)).toEqual(defaultHours());
     expect(hoursFromApi({})).toEqual(defaultHours());
+  });
+});
+
+describe("money", () => {
+  it("parses what people type into whole paise", () => {
+    expect(parseRupees("249")).toEqual({ ok: true, paise: 24900 });
+    expect(parseRupees("249.5")).toEqual({ ok: true, paise: 24950 });
+    expect(parseRupees("₹ 1,299.05")).toEqual({ ok: true, paise: 129905 });
+    expect(parseRupees("  ")).toEqual({ ok: true, paise: null });
+    expect(parseRupees("0.07")).toEqual({ ok: true, paise: 7 }); // no floating-point drift
+    for (const bad of ["abc", "-5", "1.234", "1,2,3.x", "12 34"])
+      expect(parseRupees(bad), bad).toEqual({ ok: false });
+  });
+  it("shows rupees with Indian grouping", () => {
+    expect(formatRupees(129900)).toBe("₹1,299");
+    expect(formatRupees(24950)).toBe("₹249.50");
+    expect(formatRupees(12345600)).toBe("₹1,23,456");
+    expect(formatRupees(null)).toBe("");
+  });
+  it("round-trips through the price input", () => {
+    for (const paise of [0, 7, 24900, 24950, 129905]) {
+      expect(parseRupees(paiseToInput(paise))).toEqual({ ok: true, paise });
+    }
+  });
+  it("splits comma/newline lists without blanks or repeats", () => {
+    expect(splitList("a, b,\nc, a, ,")).toEqual(["a", "b", "c"]);
+    expect(splitList("")).toEqual([]);
+  });
+});
+
+describe("product validation text", () => {
+  it("is available in Hindi", () => {
+    expect(validationText(tHi, "Enter the product name (at least 2 letters).")).toContain("प्रोडक्ट");
+    expect(validationText(tEn, "Price cannot be negative.")).toBe("Price cannot be negative.");
   });
 });

@@ -3,6 +3,7 @@ import {
   createBranchSchema,
   createInvitationSchema,
   createOrgSchema,
+  createProductSchema,
   hoursSchema,
   locationSchema,
   normalizeIndianPhone,
@@ -13,6 +14,7 @@ import {
   updateBranchSchema,
   updateMemberSchema,
   updateOrgSchema,
+  updateProductSchema,
 } from "../src";
 
 describe("Indian phone numbers", () => {
@@ -153,5 +155,21 @@ describe("team", () => {
     expect(ROLE_RANK.branch_manager).toBeGreaterThan(ROLE_RANK.inventory_operator);
     expect(ROLE_RANK.inventory_operator).toBe(ROLE_RANK.sales_operator);
     expect(Object.keys(ROLE_RANK).sort()).toEqual([...ROLES].sort());
+  });
+});
+
+describe("product create vs update", () => {
+  const base = { name: "Claw hammer", categoryId: "3f2b1c0e-9d3a-4b6e-8f1a-2c4d5e6f7a8b" };
+  it("create fills in defaults", () => {
+    expect(createProductSchema.parse(base)).toMatchObject({ unit: "pcs", trackingMode: "quantity", lowStockThreshold: 0 });
+  });
+  it("update never injects defaults, and an empty update is rejected", () => {
+    expect(updateProductSchema.safeParse({}).success).toBe(false);
+    expect(updateProductSchema.parse({ name: "Renamed" })).toEqual({ name: "Renamed" });
+  });
+  it("prices are whole paise, never negative", () => {
+    for (const pricePaise of [-1, 12.5, 1e12]) expect(createProductSchema.safeParse({ ...base, pricePaise }).success).toBe(false);
+    expect(createProductSchema.safeParse({ ...base, pricePaise: 0 }).success).toBe(true);
+    expect(updateProductSchema.parse({ pricePaise: null })).toEqual({ pricePaise: null });
   });
 });
