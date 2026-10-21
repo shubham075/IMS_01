@@ -22,12 +22,12 @@ Status: **Accepted** = agreed with the founder; **Proposed** = my default, open 
 | D-16 | Freshness TTL per source: native 24h, CSV 72h, manual 7d (then "Check with shop") | Proposed |
 | D-17 | Stack: TypeScript/NestJS modular monolith, Postgres+PostGIS, Redis/BullMQ, Next.js, React Native (Expo), AWS Mumbai | Proposed |
 | D-18 | Search on Postgres (FTS + trigram + PostGIS) until ~1M listings | Proposed |
-
 | D-19 | Reservations, consumer payments and delivery are out of Release 1 and 2; D-09, D-11, D-13, D-14, D-15 apply only when the feature is re-opened | Accepted |
 | D-20 | Release 1 languages: English + Hindi (UI and search; Hinglish/transliteration in search) | Accepted |
 | D-21 | Entity not yet incorporated; recommended Private Limited (see FRD §12) | Proposed |
 | D-22 | Premium plan contents in Release 1: to be decided by the founder after review (FRD §5 has blank columns) | Open |
 | D-23 | Pilot city/state undecided; state-specific compliance kept as placeholders | Open |
+| D-24 | UI style: **Flat bold** (outlined, hard shadows) with exactly four colours #242424 ink, #F2F2E8 paper, #DFFF00 volt, #9B9E95 grey (grey never used for text). Chosen 2026-10-21 over the clay style. Spec: `design/DESIGN_SYSTEM.md` | Accepted |
 
 ## Open questions — deferred reservation feature (resolve only when it's re-opened)
 1. Platform commission % on paid reservations, and who bears the gateway fee?

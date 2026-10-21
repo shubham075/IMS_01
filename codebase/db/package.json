@@ -1,0 +1,14 @@
+{
+  "name": "@idea01/db",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate": "node migrate.mjs",
+    "reset": "node migrate.mjs --reset",
+    "seed": "node seeds/seed.mjs",
+    "test": "node tests/run.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}

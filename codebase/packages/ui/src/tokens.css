@@ -1,0 +1,32 @@
+/* Design tokens — "Flat bold" (docs: design/DESIGN_SYSTEM.md). Exactly four colours. Import once at the app root. */
+:root {
+  --ink: #242424;    /* text, borders, hard shadows, primary buttons */
+  --paper: #F2F2E8;  /* backgrounds; text on ink */
+  --volt: #DFFF00;   /* attention + selection + "Available"; never text on paper (use ink on volt) */
+  --grey: #9B9E95;   /* secondary fills only; NEVER text (2.4:1 on paper) */
+
+  --ink-a: rgba(36, 36, 36, .16);   /* hairlines */
+  --overlay: rgba(36, 36, 36, .5);  /* modal backdrop */
+
+  --border: 2.5px solid var(--ink);
+  --radius-card: 10px;
+  --radius-control: 8px;
+  --radius-chip: 6px;
+  --shadow-card: 6px 6px 0 var(--ink);
+  --shadow-small: 4px 4px 0 var(--ink);
+  --shadow-button: 3px 3px 0 var(--ink);
+  --touch-min: 48px;
+
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, "Noto Sans", "Noto Sans Devanagari", sans-serif;
+}
+
+/* Custom checkbox so no browser-default colours leak in */
+input[type="checkbox"] {
+  appearance: none; width: 26px; height: 26px; margin: 0; flex: none; cursor: pointer;
+  border: var(--border); border-radius: var(--radius-chip); background: var(--paper);
+  display: inline-grid; place-content: center;
+}
+input[type="checkbox"]:checked { background: var(--volt); }
+input[type="checkbox"]:checked::after { content: "✓"; font-weight: 900; font-size: 17px; line-height: 1; color: var(--ink); }
+
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }

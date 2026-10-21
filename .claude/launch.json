@@ -4,8 +4,26 @@
     {
       "name": "review-hub",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "review"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8765",
+        "--directory",
+        "review"
+      ],
       "port": 8765
+    },
+    {
+      "name": "prototypes",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8766",
+        "--directory",
+        "design/prototypes"
+      ],
+      "port": 8766
     }
   ]
 }

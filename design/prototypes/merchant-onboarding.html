@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merchant Onboarding Prototype</title>
+<style>
+/* Palette (only these 4): #242424 ink · #9B9E95 grey · #DFFF00 volt · #F2F2E8 paper. Grey is for fills/borders only, never text. */
+:root{--ink:#242424;--grey:#9B9E95;--volt:#DFFF00;--paper:#F2F2E8;--ink-a:rgba(36,36,36,.16);--grey-a:rgba(155,158,149,.35)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif}
+button,input,select{font:inherit;color:var(--ink)}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.sr{position:absolute;left:-9999px}
+h1{font-size:27px;line-height:1.25;margin:0 0 6px}h2{font-size:21px;margin:0 0 6px}h3{font-size:17px;margin:0 0 4px}p{margin:0 0 10px}
+.muted{opacity:.78;font-size:14px}.small{font-size:13px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.grow{flex:1;min-width:0}.between{justify-content:space-between}.mt{margin-top:16px}.mt2{margin-top:26px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+/* ---------- app shell ---------- */
+.proto{position:sticky;top:0;z-index:50;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 14px;font-size:13px}
+.proto b{margin-right:4px}
+.seg{display:inline-flex}.seg button{padding:5px 12px;font-size:13px;min-height:34px}
+.sim{display:inline-flex;gap:4px;align-items:center;cursor:pointer;padding:4px 8px}
+.stage{display:flex;justify-content:center;padding:22px 14px 60px}
+.app{width:min(1040px,100%)}
+.app.phone{width:392px}
+.frame{display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start}
+.app.phone .frame{grid-template-columns:1fr}
+.app.phone .side{display:none}
+.app.phone .grid2,.app.phone .grid3{grid-template-columns:1fr}.app.phone .grid4{grid-template-columns:1fr 1fr}
+.side{padding:20px;position:sticky;top:60px}
+.main{padding:26px 28px;min-width:0}
+.app.phone .main{padding:20px 16px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:800;margin-bottom:18px}
+.logo{width:38px;height:38px;display:grid;place-items:center;font-weight:900}
+.steps{list-style:none;padding:0;margin:0}
+.steps li{display:flex;gap:10px;align-items:center;padding:8px 6px;font-size:14.5px}
+.num{width:28px;height:28px;display:grid;place-items:center;font-size:13px;font-weight:800;flex:none}
+.mtop{display:none;margin-bottom:14px}.app.phone .mtop{display:block}
+.mbar{height:8px;overflow:hidden}.mbar i{display:block;height:100%}
+.banner{padding:10px 14px;margin-bottom:14px;font-size:14px;display:flex;gap:8px;align-items:center}
+/* ---------- form controls ---------- */
+label.f{display:block;font-weight:600;font-size:14px;margin:14px 0 5px}
+.inp{width:100%;padding:11px 14px;min-height:46px}
+.hint{font-size:13px;opacity:.75;margin-top:4px}.err{font-size:13.5px;font-weight:600;margin-top:5px}
+.btn{padding:12px 22px;min-height:48px;font-weight:700}.btn.sm{padding:6px 14px;min-height:36px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.otp{display:flex;gap:8px}.otp input{width:48px;height:56px;text-align:center;font-size:22px;font-weight:700;padding:0}
+.card-opt{padding:16px;text-align:left;display:block;width:100%}
+.card-opt .ic{font-size:26px;display:block;margin-bottom:6px}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t th,table.t td{padding:8px 10px;text-align:left;vertical-align:middle}
+.tw{overflow-x:auto}
+.pill{display:inline-block;padding:2px 10px;font-size:12.5px;font-weight:700}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:600}
+
+.map{position:relative;height:200px;overflow:hidden;cursor:crosshair;touch-action:none;
+  background:
+   linear-gradient(90deg,transparent 49%,var(--grey) 49% 51%,transparent 51%) 0 0/120px 100%,
+   linear-gradient(0deg,transparent 49%,var(--grey) 49% 51%,transparent 51%) 0 0/100% 90px,var(--grey-a)}
+.pin{position:absolute;transform:translate(-50%,-100%);font-size:0;line-height:0;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(36,36,36,.3))}
+.em{color:transparent;text-shadow:0 0 0 var(--ink);font-style:normal}.pill.bad .em,.btn.pri .em{text-shadow:0 0 0 var(--paper)}
+.hours{display:grid;grid-template-columns:90px 1fr auto auto;gap:8px;align-items:center;margin:6px 0}
+.hours input[type=time]{padding:6px 8px;min-height:38px}
+.shopcard{padding:14px 16px}
+.lab{display:inline-block;padding:3px 12px;font-weight:700;font-size:13px}
+.modal{position:fixed;inset:0;z-index:80;display:none;place-items:center;background:rgba(36,36,36,.5);padding:16px}
+.modal.on{display:grid}.modal .box{width:min(460px,100%);padding:24px;max-height:90vh;overflow:auto}
+.plan{padding:20px;display:flex;flex-direction:column}
+.plan ul{list-style:none;padding:0;margin:12px 0;flex:1}.plan li{padding:6px 0;display:flex;justify-content:space-between;gap:10px;font-size:14.5px;border-bottom:1px dashed var(--ink-a)}
+.price{font-size:26px;font-weight:800}
+.kpi{padding:14px;text-align:center}.kpi b{display:block;font-size:26px}
+@media (max-width:860px){.frame{grid-template-columns:1fr}.side{display:none}.mtop{display:block}.grid3,.grid4{grid-template-columns:1fr 1fr}.main{padding:20px 16px}}
+@media (max-width:520px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.hours{grid-template-columns:70px 1fr auto}.hours .ex{display:none}.otp input{width:42px}}
+
+/* ================= STYLE B — Flat bold (outlined, hard shadows, high contrast) ================= */
+body[data-style=b]{background:var(--paper)}
+[data-style=b] .clay,[data-style=b] .side,[data-style=b] .main,[data-style=b] .modal .box{background:var(--paper);border:2.5px solid var(--ink);border-radius:10px;box-shadow:6px 6px 0 var(--ink)}
+[data-style=b] .main{background:var(--paper)}[data-style=b] .side{background:var(--grey)}
+[data-style=b] .proto{background:var(--ink);color:var(--paper);border:0;border-radius:0;box-shadow:none}
+[data-style=b] .proto button{border-color:var(--paper)}[data-style=b] .proto input[type=checkbox]{border-color:var(--paper)}
+[data-style=b] button,[data-style=b] .btn{border:2.5px solid var(--ink);border-radius:8px;background:var(--paper);box-shadow:3px 3px 0 var(--ink);font-weight:700;transition:transform .08s,box-shadow .08s}
+[data-style=b] button:hover:not([disabled]){background:var(--grey)}
+[data-style=b] button:active:not([disabled]),[data-style=b] button.on{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+[data-style=b] button.on{background:var(--volt)}
+[data-style=b] .btn.pri{background:var(--ink);color:var(--paper)}[data-style=b] .btn.pri:hover:not([disabled]){background:var(--volt);color:var(--ink)}
+[data-style=b] .btn.sun{background:var(--volt)}
+[data-style=b] .btn.ghost{background:transparent;box-shadow:none;border-color:transparent;text-decoration:underline}
+[data-style=b] .inp{border:2.5px solid var(--ink);border-radius:8px;background:var(--paper)}
+[data-style=b] .inp:focus{box-shadow:4px 4px 0 var(--volt)}
+[data-style=b] .logo{background:var(--ink);color:var(--volt);border-radius:8px;border:2.5px solid var(--ink)}
+[data-style=b] .num{border:2.5px solid var(--ink);border-radius:7px;background:var(--paper)}
+[data-style=b] .steps li.cur .num{background:var(--ink);color:var(--volt)}[data-style=b] .steps li.done .num{background:var(--volt)}
+[data-style=b] .steps li.cur{font-weight:800;background:var(--paper);border:2.5px solid var(--ink);border-radius:8px}
+[data-style=b] .banner{background:var(--volt);border:2.5px solid var(--ink);border-radius:8px}[data-style=b] .banner.info{background:var(--grey)}
+[data-style=b] .err{background:var(--volt);border:2px solid var(--ink);border-radius:6px;padding:4px 10px;display:inline-block}[data-style=b] .err::before{content:"! "}
+[data-style=b] .card-opt{border-radius:10px}[data-style=b] .card-opt.sel{background:var(--volt)}
+[data-style=b] .tw{border:2.5px solid var(--ink);border-radius:8px}
+[data-style=b] th{background:var(--ink);color:var(--paper)}[data-style=b] td{border-top:2px solid var(--ink)}
+[data-style=b] .pill{border:2px solid var(--ink);border-radius:6px;background:var(--grey)}[data-style=b] .pill.warn{background:var(--volt)}[data-style=b] .pill.bad{background:var(--ink);color:var(--paper)}
+[data-style=b] .map{border:2.5px solid var(--ink);border-radius:8px}
+[data-style=b] .shopcard{border:2.5px solid var(--ink);border-radius:10px;box-shadow:5px 5px 0 var(--ink);background:var(--paper)}
+[data-style=b] .lab{border:2px solid var(--ink);border-radius:6px;background:var(--volt)}[data-style=b] .lab.warn{background:var(--grey)}
+[data-style=b] .plan{border:2.5px solid var(--ink);border-radius:10px;background:var(--paper);box-shadow:6px 6px 0 var(--ink)}
+[data-style=b] .plan.rec{background:var(--volt)}
+[data-style=b] .kpi{border:2.5px solid var(--ink);border-radius:10px;box-shadow:4px 4px 0 var(--ink)}
+[data-style=b] .mbar{border:2px solid var(--ink);border-radius:6px;background:var(--paper)}[data-style=b] .mbar i{background:var(--ink)}
+[data-style=b] .app.phone{border:3px solid var(--ink);border-radius:30px;padding:8px;background:var(--grey);box-shadow:8px 8px 0 var(--ink)}
+[data-style=b] .app.phone .main{border-radius:22px;box-shadow:none}
+input[type=checkbox]{appearance:none;-webkit-appearance:none;width:26px;height:26px;flex:none;margin:0;border:2.5px solid var(--ink);border-radius:6px;background:var(--paper);display:inline-grid;place-content:center;cursor:pointer}
+input[type=checkbox]:checked{background:var(--volt)}input[type=checkbox]:checked::after{content:"✓";font-weight:900;font-size:17px;line-height:1;color:var(--ink)}
+</style>
+</head>
+<body data-style="b">
+<div class="proto clay" id="proto"></div>
+<div class="stage"><div class="app" id="app"></div></div>
+<div class="modal" id="modal"><div class="box" id="mbox"></div></div>
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const PIN = '<svg width="34" height="44" viewBox="0 0 34 44" aria-hidden="true"><path d="M17 43C17 43 3 27 3 16a14 14 0 0 1 28 0c0 11-14 27-14 27z" fill="#242424"/><circle cx="17" cy="16" r="6" fill="#DFFF00"/></svg>';
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ls = { get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+/* ---------------- i18n (English + Hindi) ---------------- */
+const T = {
+en: { app: "Idea01 — Merchant", proto: "Prototype", style: "Style", lang: "Language", device: "View", desktop: "Desktop", phone: "Phone", sim: "Simulate", offline: "Offline", otpdown: "SMS provider down", payfail: "Payment fails",
+ welcome: "Run your shop's stock from your phone", welcomeSub: "Keep every item counted, and let nearby shoppers find what you have. Free to start.",
+ phoneLbl: "Mobile number", phoneHint: "We'll send a 6-digit code. No password needed.", sendOtp: "Send code", terms: "I agree to the Terms of Use and Privacy Notice", termsErr: "Please accept the Terms and Privacy Notice to continue.",
+ phoneErr: "Enter a valid 10-digit Indian mobile number.", otpTitle: "Enter the code", otpSent: "Code sent to {p} by {c}.", demoOtp: "Prototype only — the code is 123456.", verify: "Verify and continue", wrongOtp: "That code is not right. {n} tries left.", locked: "Too many wrong codes. Try again in {s}s.", resendIn: "Resend in {s}s", resend: "Send a new code", tryWa: "Send on WhatsApp", tryCall: "Call me with the code", change: "Change number",
+ sendLimit: "You asked for too many codes. Please try again in 1 hour.", noNet: "No internet connection. Check your network and try again.", providerDown: "SMS is not reaching you right now. We switched to WhatsApp.",
+ chSms: "SMS", chWa: "WhatsApp", chVoice: "voice call", expired: "This code has expired. Send a new one.",
+ steps: { org: "Your shop", branch: "Shop location", products: "Add products", stock: "Opening stock", publish: "Go public", plans: "Choose plan" }, stepOf: "Step {a} of {b}",
+ orgT: "Tell us about your shop", orgSub: "This is the name shoppers will see.", shopName: "Shop name", shopNameErr: "Enter your shop name (at least 2 letters).", category: "What do you mainly sell?",
+ cats: { hardware: "Hardware & paints", electrical: "Electricals", stationery: "Stationery & books", electronics: "Mobile & electronics accessories", pharmacy: "Medicines / pharmacy", other: "Something else" },
+ pharmNote: "Medicine shops need extra checks. You can manage stock now, but we can't show your shop to shoppers yet.", gstin: "GSTIN (optional)", gstinHint: "Add it if you have one. It appears on your invoices.", gstinErr: "This GSTIN doesn't look right. Check the 15 characters.",
+ shopPhone: "Shop phone (shown to shoppers)", next: "Continue", back: "Back", skip: "Do this later",
+ brT: "Where is your shop?", brSub: "Shoppers find you by location.", branchName: "Branch name", branchNameHint: "e.g. Main shop, Jayanagar", addr: "Address", area: "Area", pin: "PIN code", pinErr: "PIN code must be 6 digits.", mapT: "Pin your shop on the map", mapHint: "Tap the map or drag the pin. Required before you can go public.", useLoc: "Use my location", locDenied: "Location is off. You can still tap the map or pick your PIN code.", pinSet: "Pin placed ✓",
+ hoursT: "Opening hours", closed: "Closed", open: "Open", sameAll: "Copy Monday to all days", days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], hoursErr: "Closing time must be after opening time for {d}.",
+ whatsapp: "Show a WhatsApp button to shoppers", reqAddr: "Enter the address.",
+ prT: "Add your products", prSub: "Pick the way that is easiest for you. You can add more later.", scan: "Scan barcodes", scanD: "Use your phone camera (in the mobile app).", csv: "Upload Excel / CSV", csvD: "Bring your list from a file.", manual: "Type them in", manualD: "Add a few items by hand.", sample: "Try sample products", sampleD: "Load 12 example items to explore.",
+ useFile: "Use sample file (stock_oct.csv)", checking: "Checking the file…", ready: "{n} ready", attention: "{n} need attention", applyN: "Add {n} ready items", fix: "Fix", fixed: "Fixed", errDup: "Barcode already used by another item", errUnit: "Unit “dozen” is not set up", mergeIt: "Merge with existing", setPcs: "Use pcs",
+ addItem: "Add item", itemName: "Item name", unit: "Unit", price: "Price (₹)", yourItems: "Your items ({n})", noItems: "No items yet.", scanNote: "Barcode scanning works in the mobile app. For now, pick another way — you can scan later.",
+ stT: "How many do you have?", stSub: "Rough numbers are fine. You can fix them any time; every change is recorded.", qty: "Qty", low: "Warn me at", statusOnly: "Just in / out of stock", tip: "Tip: for small items you don't count, switch on “Just in / out of stock”.", qtyErr: "Enter a whole number, 0 or more.",
+ puT: "Go public", puSub: "Choose what shoppers can see. You stay in control.", checklist: "Before you publish", ckPin: "Shop pinned on the map", ckHours: "Opening hours set", ckItems: "At least 1 item with stock", ckPhoto: "Shop photo (optional)", addPhoto: "Add photo", photoAdded: "Photo added ✓",
+ pubBranch: "Show my shop to nearby shoppers", pubPrice: "Show prices", pubReview: "Review imported items before they go public", noQty: "Shoppers never see your exact stock numbers — only a status like “Available”.", preview: "How shoppers will see it", updated: "updated just now", availableL: "Available", pinNeeded: "Pin your shop on the map to go public.", goLive: "Publish my shop", saveDraft: "Save as draft",
+ plT: "Choose your plan", plSub: "Start free. Upgrade when you need more.", sampleBanner: "Sample content — plan features and prices are not decided yet (decision D-22). Do not treat these as final.", monthly: "Monthly", annual: "Annual", free: "Free", premium: "Premium", tbd: "₹ — to be decided", perMo: "per month + GST", perYr: "per year + GST", trial: "Free trial (length to be decided)", contFree: "Continue with Free", startPrem: "Start Premium trial", recommended: "Most shops pick this",
+ feat: { branches: "Branches", staff: "Staff users", products: "Products", scan: "Barcode scan", offline: "Works offline", csv: "Excel / CSV import", counts: "Stock counts", transfers: "Branch transfers", reports: "Reports", rich: "Rich shop page (photos, hours)", api: "API / POS connection (later)", support: "Support", resv: "Reservations & delivery" },
+ fv: { one: "1", many: "Multiple", two: "Up to 2", more: "More", nTbd: "Limit TBD", basic: "Basic", adv: "Advanced + exports", std: "Standard", prio: "Priority", later: "Coming later", yes: "✓", no: "—" },
+ payT: "Start Premium trial", payNote: "Payment gateway (mock). Nothing is charged in this prototype.", payUpi: "Pay with UPI", payCard: "Pay with card", payFailMsg: "The payment didn’t go through. You haven’t been charged. Try again or continue with Free.", payOk: "Trial started ✓", retry: "Try again", cancel: "Cancel", processing: "Processing…",
+ doneT: "Your shop is ready", doneLive: "Your shop is live for nearby shoppers.", doneDraft: "Saved as a draft. Go public from Settings when you are ready.", doneRO: "Your plan: {p}.", kItems: "Items", kBranch: "Branch", kPlan: "Plan", kStatus: "Status", live: "Live", draft: "Draft", next2: "What next", n1: "Invite your staff", n2: "Install the mobile app to scan and sell", n3: "See how shoppers find you", restart: "Start over",
+ offlineBanner: "You're offline. Your changes will be saved and sent when the connection is back.", retryLater: "Something went wrong. Please try again." },
+hi: { app: "Idea01 — व्यापारी", proto: "प्रोटोटाइप", style: "स्टाइल", lang: "भाषा", device: "व्यू", desktop: "डेस्कटॉप", phone: "फ़ोन", sim: "टेस्ट करें", offline: "ऑफ़लाइन", otpdown: "SMS सेवा बंद", payfail: "भुगतान फ़ेल",
+ welcome: "अपनी दुकान का स्टॉक फ़ोन से संभालें", welcomeSub: "हर सामान की गिनती रखें और आस-पास के ग्राहकों को दिखाएँ कि आपके पास क्या है। शुरुआत मुफ़्त है।",
+ phoneLbl: "मोबाइल नंबर", phoneHint: "हम 6 अंकों का कोड भेजेंगे। पासवर्ड की ज़रूरत नहीं।", sendOtp: "कोड भेजें", terms: "मैं उपयोग की शर्तों और प्राइवेसी नोटिस से सहमत हूँ", termsErr: "आगे बढ़ने के लिए शर्तें और प्राइवेसी नोटिस स्वीकार करें।",
+ phoneErr: "सही 10 अंकों का भारतीय मोबाइल नंबर डालें।", otpTitle: "कोड डालें", otpSent: "{p} पर {c} से कोड भेजा गया।", demoOtp: "सिर्फ़ प्रोटोटाइप के लिए — कोड 123456 है।", verify: "जाँचें और आगे बढ़ें", wrongOtp: "यह कोड सही नहीं है। {n} कोशिशें बाकी हैं।", locked: "बहुत ज़्यादा गलत कोड। {s} सेकंड बाद कोशिश करें।", resendIn: "{s} सेकंड में दोबारा भेजें", resend: "नया कोड भेजें", tryWa: "WhatsApp पर भेजें", tryCall: "कोड बोलकर फ़ोन करें", change: "नंबर बदलें",
+ sendLimit: "आपने बहुत ज़्यादा कोड माँगे। कृपया 1 घंटे बाद कोशिश करें।", noNet: "इंटरनेट नहीं है। नेटवर्क देखकर फिर कोशिश करें।", providerDown: "अभी SMS आप तक नहीं पहुँच रहा। हमने WhatsApp पर भेज दिया।",
+ chSms: "SMS", chWa: "WhatsApp", chVoice: "फ़ोन कॉल", expired: "यह कोड पुराना हो गया है। नया कोड भेजें।",
+ steps: { org: "आपकी दुकान", branch: "दुकान की जगह", products: "सामान जोड़ें", stock: "शुरुआती स्टॉक", publish: "ग्राहकों को दिखाएँ", plans: "प्लान चुनें" }, stepOf: "चरण {a} / {b}",
+ orgT: "अपनी दुकान के बारे में बताएँ", orgSub: "ग्राहकों को यही नाम दिखेगा।", shopName: "दुकान का नाम", shopNameErr: "दुकान का नाम डालें (कम से कम 2 अक्षर)।", category: "आप मुख्य रूप से क्या बेचते हैं?",
+ cats: { hardware: "हार्डवेयर और पेंट", electrical: "इलेक्ट्रिकल", stationery: "स्टेशनरी और किताबें", electronics: "मोबाइल और इलेक्ट्रॉनिक्स एक्सेसरीज़", pharmacy: "दवाइयाँ / मेडिकल", other: "कुछ और" },
+ pharmNote: "दवा की दुकानों के लिए अतिरिक्त जाँच होती है। आप स्टॉक संभाल सकते हैं, पर अभी ग्राहकों को दुकान नहीं दिखा सकते।", gstin: "GSTIN (वैकल्पिक)", gstinHint: "अगर है तो डालें। यह आपके बिल पर दिखेगा।", gstinErr: "यह GSTIN सही नहीं लग रहा। 15 अक्षर जाँचें।",
+ shopPhone: "दुकान का फ़ोन (ग्राहकों को दिखेगा)", next: "आगे बढ़ें", back: "वापस", skip: "बाद में करूँगा",
+ brT: "आपकी दुकान कहाँ है?", brSub: "ग्राहक आपको जगह से ढूँढते हैं।", branchName: "शाखा का नाम", branchNameHint: "जैसे: मुख्य दुकान, जयनगर", addr: "पता", area: "इलाका", pin: "पिन कोड", pinErr: "पिन कोड 6 अंकों का होना चाहिए।", mapT: "नक्शे पर अपनी दुकान चुनें", mapHint: "नक्शे पर टैप करें या पिन खींचें। ग्राहकों को दिखाने से पहले ज़रूरी है।", useLoc: "मेरी लोकेशन इस्तेमाल करें", locDenied: "लोकेशन बंद है। आप नक्शे पर टैप कर सकते हैं या पिन कोड चुन सकते हैं।", pinSet: "पिन लग गया ✓",
+ hoursT: "दुकान खुलने का समय", closed: "बंद", open: "खुला", sameAll: "सोमवार का समय सभी दिनों में", days: ["सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि", "रवि"], hoursErr: "{d} के लिए बंद होने का समय खुलने के बाद का होना चाहिए।",
+ whatsapp: "ग्राहकों को WhatsApp बटन दिखाएँ", reqAddr: "पता डालें।",
+ prT: "अपना सामान जोड़ें", prSub: "जो तरीका आसान लगे चुनें। बाद में और जोड़ सकते हैं।", scan: "बारकोड स्कैन करें", scanD: "फ़ोन कैमरे से (मोबाइल ऐप में)।", csv: "Excel / CSV अपलोड करें", csvD: "फ़ाइल से अपनी सूची लाएँ।", manual: "हाथ से डालें", manualD: "कुछ चीज़ें खुद जोड़ें।", sample: "नमूना सामान देखें", sampleD: "समझने के लिए 12 उदाहरण जोड़ें।",
+ useFile: "नमूना फ़ाइल इस्तेमाल करें (stock_oct.csv)", checking: "फ़ाइल जाँच रहे हैं…", ready: "{n} तैयार", attention: "{n} पर ध्यान दें", applyN: "{n} तैयार चीज़ें जोड़ें", fix: "ठीक करें", fixed: "ठीक हुआ", errDup: "यह बारकोड किसी और सामान में है", errUnit: "इकाई “dozen” सेट नहीं है", mergeIt: "मौजूदा से मिलाएँ", setPcs: "pcs रखें",
+ addItem: "जोड़ें", itemName: "सामान का नाम", unit: "इकाई", price: "कीमत (₹)", yourItems: "आपका सामान ({n})", noItems: "अभी कोई सामान नहीं।", scanNote: "बारकोड स्कैन मोबाइल ऐप में चलता है। अभी कोई और तरीका चुनें — स्कैन बाद में कर सकते हैं।",
+ stT: "आपके पास कितना है?", stSub: "मोटा अंदाज़ा भी चलेगा। कभी भी सुधार सकते हैं; हर बदलाव दर्ज होता है।", qty: "मात्रा", low: "कम होने पर बताएँ", statusOnly: "सिर्फ़ है / नहीं है", tip: "सुझाव: जिन छोटी चीज़ों की गिनती नहीं करते, उनके लिए “सिर्फ़ है / नहीं है” चालू करें।", qtyErr: "0 या उससे ज़्यादा पूरी संख्या डालें।",
+ puT: "ग्राहकों को दिखाएँ", puSub: "तय करें ग्राहक क्या देखें। नियंत्रण आपके हाथ में है।", checklist: "दिखाने से पहले", ckPin: "नक्शे पर दुकान चुनी", ckHours: "खुलने का समय डाला", ckItems: "कम से कम 1 सामान स्टॉक के साथ", ckPhoto: "दुकान की फ़ोटो (वैकल्पिक)", addPhoto: "फ़ोटो जोड़ें", photoAdded: "फ़ोटो जुड़ गई ✓",
+ pubBranch: "आस-पास के ग्राहकों को मेरी दुकान दिखाएँ", pubPrice: "कीमतें दिखाएँ", pubReview: "इम्पोर्ट किया सामान दिखाने से पहले जाँचूँगा", noQty: "ग्राहक आपके स्टॉक की सही संख्या कभी नहीं देखते — सिर्फ़ “उपलब्ध” जैसी स्थिति।", preview: "ग्राहकों को ऐसा दिखेगा", updated: "अभी अपडेट हुआ", availableL: "उपलब्ध", pinNeeded: "दुकान दिखाने के लिए नक्शे पर पिन लगाएँ।", goLive: "मेरी दुकान दिखाएँ", saveDraft: "ड्राफ़्ट में रखें",
+ plT: "अपना प्लान चुनें", plSub: "मुफ़्त शुरू करें। ज़रूरत पड़े तो बढ़ाएँ।", sampleBanner: "नमूना जानकारी — प्लान की सुविधाएँ और कीमतें अभी तय नहीं हैं (निर्णय D-22)। इन्हें अंतिम न मानें।", monthly: "मासिक", annual: "वार्षिक", free: "मुफ़्त", premium: "प्रीमियम", tbd: "₹ — तय होना बाकी", perMo: "प्रति माह + GST", perYr: "प्रति वर्ष + GST", trial: "मुफ़्त ट्रायल (अवधि तय होना बाकी)", contFree: "मुफ़्त में जारी रखें", startPrem: "प्रीमियम ट्रायल शुरू करें", recommended: "ज़्यादातर दुकानें यही चुनती हैं",
+ feat: { branches: "शाखाएँ", staff: "स्टाफ़ यूज़र", products: "सामान", scan: "बारकोड स्कैन", offline: "ऑफ़लाइन चलता है", csv: "Excel / CSV इम्पोर्ट", counts: "स्टॉक गिनती", transfers: "शाखाओं के बीच ट्रांसफ़र", reports: "रिपोर्ट", rich: "दुकान का पेज (फ़ोटो, समय)", api: "API / POS कनेक्शन (बाद में)", support: "सहायता", resv: "रिज़र्वेशन और डिलीवरी" },
+ fv: { one: "1", many: "कई", two: "2 तक", more: "ज़्यादा", nTbd: "सीमा तय होनी है", basic: "बेसिक", adv: "एडवांस्ड + एक्सपोर्ट", std: "सामान्य", prio: "प्राथमिकता", later: "बाद में आएगा", yes: "✓", no: "—" },
+ payT: "प्रीमियम ट्रायल शुरू करें", payNote: "पेमेंट गेटवे (नमूना)। इस प्रोटोटाइप में कुछ नहीं कटता।", payUpi: "UPI से भुगतान", payCard: "कार्ड से भुगतान", payFailMsg: "भुगतान पूरा नहीं हुआ। आपसे कुछ नहीं कटा। फिर कोशिश करें या मुफ़्त में जारी रखें।", payOk: "ट्रायल शुरू ✓", retry: "फिर कोशिश करें", cancel: "रद्द करें", processing: "प्रक्रिया चल रही है…",
+ doneT: "आपकी दुकान तैयार है", doneLive: "आपकी दुकान आस-पास के ग्राहकों को दिख रही है।", doneDraft: "ड्राफ़्ट में सेव हुआ। तैयार होने पर सेटिंग से ग्राहकों को दिखाएँ।", doneRO: "आपका प्लान: {p}।", kItems: "सामान", kBranch: "शाखा", kPlan: "प्लान", kStatus: "स्थिति", live: "लाइव", draft: "ड्राफ़्ट", next2: "आगे क्या करें", n1: "अपने स्टाफ़ को जोड़ें", n2: "स्कैन और बिक्री के लिए मोबाइल ऐप इंस्टॉल करें", n3: "देखें ग्राहक आपको कैसे ढूँढते हैं", restart: "फिर से शुरू करें",
+ offlineBanner: "आप ऑफ़लाइन हैं। आपके बदलाव सेव रहेंगे और नेटवर्क आने पर भेजे जाएँगे।", retryLater: "कुछ गड़बड़ हुई। कृपया फिर कोशिश करें।" },
+};
+
+/* ---------------- state ---------------- */
+const SAMPLE = [["Taparia Claw Hammer 500g", "Taparia क्लॉ हथौड़ा 500g", "pcs", 285], ["Philips LED Bulb 9W", "Philips एलईडी बल्ब 9W", "pcs", 99], ["Havells Ceiling Fan 1200mm", "Havells सीलिंग पंखा 1200mm", "pcs", 2650], ["Asian Paints Wall Emulsion 4L", "Asian Paints दीवार का पेंट 4L", "tin", 1850], ["Godrej Padlock 50mm", "Godrej ताला 50mm", "pcs", 245], ["Classmate Notebook 172 pages", "Classmate कॉपी 172 पेज", "pcs", 62], ["Polycab House Wire 1.5 sqmm", "Polycab तार 1.5 sqmm", "coil", 1850], ["boAt Type-C Cable 1m", "boAt टाइप-C केबल 1m", "pcs", 249], ["Supreme PVC Pipe 1 inch", "Supreme पीवीसी पाइप 1 इंच", "length", 420], ["Fevicol SH 200g", "फेविकोल SH 200g", "pack", 95], ["Duracell AA Battery (4)", "Duracell AA बैटरी (4)", "pack", 140], ["Camlin Ball Pen Blue", "Camlin बॉल पेन नीला", "pcs", 10]];
+const CSV_ROWS = [["Bosch HSS Drill Bit 6mm", "pcs", 62, "ok"], ["Taparia Phillips Screwdriver 150mm", "pcs", 75, "ok"], ["Stanley Measuring Tape 5m", "pcs", 320, "dup"], ["Cumi Sandpaper Grit 120", "sheet", 12, "ok"], ["Supreme PVC Elbow 1 inch", "pcs", 38, "ok"], ["Wall Plug 8mm", "dozen", 30, "unit"], ["Anchor 6A Switch", "pcs", 38, "ok"], ["Havells MCB 16A SP", "pcs", 210, "ok"]];
+const H0 = () => ({ on: true, from: "09:00", to: "21:00" });
+const fresh = () => ({
+  lang: ls.get("p.lang", "en"), style: "b", device: "desktop", sim: { offline: false, otpdown: false, payfail: false },
+  step: "login", phone: "", terms: false, sends: 0, channel: "sms", fails: 0, lockUntil: 0, resendAt: 0, otpSentAt: 0,
+  org: { name: "", cat: "hardware", gstin: "", phone: "" },
+  branch: { name: "", addr: "", area: "", pin: "", pinAt: null, wa: true, hours: Object.fromEntries([0, 1, 2, 3, 4, 5, 6].map((i) => [i, { ...H0(), on: i !== 6, to: i === 6 ? "14:00" : "21:00", from: i === 6 ? "10:00" : "09:00" }])) },
+  method: null, csv: { stage: "none", rows: [], fixed: {} }, products: [], publish: { branch: true, prices: true, review: false, photo: false, live: false }, plan: "free", cycle: "monthly", pay: { state: "idle" },
+  errors: {},
+});
+let S = fresh();
+const t = (k, v = {}) => { let s = k.split(".").reduce((o, p) => o?.[p], T[S.lang]) ?? k.split(".").reduce((o, p) => o?.[p], T.en) ?? k; return typeof s === "string" ? s.replace(/\{(\w+)\}/g, (_, n) => v[n] ?? "") : s; };
+const STEPS = ["org", "branch", "products", "stock", "publish", "plans"];
+
+/* ---------------- shell ---------------- */
+function protoBar() {
+  const seg = (items, cur, act) => `<span class="seg">${items.map(([v, l]) => `<button class="${cur === v ? "on" : ""}" data-act="${act}" data-v="${v}" aria-pressed="${cur === v}">${l}</button>`).join("")}</span>`;
+  $("#proto").innerHTML = `<b>${t("proto")}</b> ${t("lang")}: ${seg([["en", "EN"], ["hi", "हिं"]], S.lang, "lang")} ${t("device")}: ${seg([["desktop", t("desktop")], ["phone", t("phone")]], S.device, "device")}
+   <span class="small">${t("sim")}:</span>
+   ${["offline", "otpdown", "payfail"].map((k) => `<label class="sim"><input type="checkbox" data-act="sim" data-v="${k}" ${S.sim[k] ? "checked" : ""}> ${t(k)}</label>`).join("")}`;
+  document.body.dataset.style = "b"; document.documentElement.lang = S.lang === "hi" ? "hi" : "en";
+}
+function shell(inner) {
+  const idx = STEPS.indexOf(S.step), inFlow = idx >= 0;
+  const steps = `<ul class="steps">${STEPS.map((s, i) => `<li class="${i === idx ? "cur" : i < idx ? "done" : ""}" ${i === idx ? 'aria-current="step"' : ""}><span class="num">${i < idx ? "✓" : i + 1}</span>${t("steps." + s)}</li>`).join("")}</ul>`;
+  const top = inFlow ? `<div class="mtop"><div class="small">${t("stepOf", { a: idx + 1, b: STEPS.length })} · <b>${t("steps." + S.step)}</b></div><div class="mbar" role="progressbar" aria-valuenow="${idx + 1}" aria-valuemax="${STEPS.length}"><i style="width:${((idx + 1) / STEPS.length) * 100}%"></i></div></div>` : "";
+  return `<div class="frame"><aside class="side"><div class="brand"><span class="logo">i1</span>${t("app")}</div>${inFlow ? steps : `<p class="muted">${t("welcomeSub")}</p>`}</aside>
+  <main class="main" id="main">${S.sim.offline ? `<div class="banner info" role="status">📶 ${t("offlineBanner")}</div>` : ""}${top}${inner}</main></div>`;
+}
+const err = (k) => (S.errors[k] ? `<div class="err" role="alert" id="e-${k}">${esc(S.errors[k])}</div>` : `<div id="e-${k}"></div>`);
+const nav = (back, next, nextLabel = t("next"), extra = "") => `<div class="row between mt2">${back ? `<button class="btn" data-act="goto" data-v="${back}">← ${t("back")}</button>` : "<span></span>"}<span class="row">${extra}<button class="btn pri" data-act="${next}">${nextLabel} →</button></span></div>`;
+
+/* ---------------- screens ---------------- */
+const screens = {
+login() {
+  return `<h1>${t("welcome")}</h1><p class="muted">${t("welcomeSub")}</p>
+   <label class="f" for="phone">${t("phoneLbl")}</label>
+   <div class="row" style="flex-wrap:nowrap"><span class="inp" style="width:70px;display:grid;place-items:center">+91</span><input class="inp grow" id="phone" inputmode="numeric" maxlength="10" autocomplete="tel-national" placeholder="98765 43210" value="${esc(S.phone)}" data-bind="phone"></div>
+   <div class="hint">${t("phoneHint")}</div>${err("phone")}
+   <label class="switch mt"><input type="checkbox" id="terms" data-bind="terms" ${S.terms ? "checked" : ""}> ${t("terms")}</label>${err("terms")}
+   <div class="mt2"><button class="btn pri" data-act="sendOtp" style="width:100%">${t("sendOtp")} →</button></div>`;
+},
+otp() {
+  const left = Math.max(0, Math.ceil((S.resendAt - Date.now()) / 1000)), lock = Math.max(0, Math.ceil((S.lockUntil - Date.now()) / 1000));
+  return `<h1>${t("otpTitle")}</h1><p>${t("otpSent", { p: "+91 " + S.phone.replace(/(\d{5})(\d{5})/, "$1 $2"), c: t({ sms: "chSms", wa: "chWa", voice: "chVoice" }[S.channel]) })}</p>
+   <div class="banner info small" id="demo">${t("demoOtp")}</div>
+   <div class="otp" role="group" aria-label="${t("otpTitle")}">${[0, 1, 2, 3, 4, 5].map((i) => `<input class="inp" inputmode="numeric" maxlength="1" aria-label="${i + 1}" data-otp="${i}" ${lock ? "disabled" : ""}>`).join("")}</div>
+   ${err("otp")}${lock ? `<div class="err">${t("locked", { s: lock })}</div>` : ""}
+   <div class="mt2"><button class="btn pri" data-act="verifyOtp" style="width:100%" ${lock ? "disabled" : ""}>${t("verify")}</button></div>
+   <div class="row mt"><button class="btn sm" data-act="resend" ${left ? "disabled" : ""}>${left ? t("resendIn", { s: left }) : t("resend")}</button>
+    <button class="btn sm" data-act="altChannel" data-v="wa">${t("tryWa")}</button><button class="btn sm" data-act="altChannel" data-v="voice">${t("tryCall")}</button>
+    <button class="btn sm ghost" data-act="goto" data-v="login">${t("change")}</button></div>`;
+},
+org() {
+  return `<h1>${t("orgT")}</h1><p class="muted">${t("orgSub")}</p>
+   <label class="f" for="oname">${t("shopName")}</label><input class="inp" id="oname" value="${esc(S.org.name)}" data-bind="org.name" autocomplete="organization" placeholder="Sharma Hardware & Paints">${err("oname")}
+   <label class="f">${t("category")}</label>
+   <div class="grid3">${Object.keys(T.en.cats).map((k) => `<button class="card-opt ${S.org.cat === k ? "sel on" : ""}" data-act="cat" data-v="${k}" aria-pressed="${S.org.cat === k}">${t("cats." + k)}</button>`).join("")}</div>
+   ${S.org.cat === "pharmacy" ? `<div class="banner mt small">ℹ ${t("pharmNote")}</div>` : ""}
+   <div class="grid2"><div><label class="f" for="gstin">${t("gstin")}</label><input class="inp" id="gstin" maxlength="15" value="${esc(S.org.gstin)}" data-bind="org.gstin" placeholder="29ABCDE1234F1Z5" style="text-transform:uppercase"><div class="hint">${t("gstinHint")}</div>${err("gstin")}</div>
+   <div><label class="f" for="ophone">${t("shopPhone")}</label><input class="inp" id="ophone" inputmode="numeric" maxlength="10" value="${esc(S.org.phone || S.phone)}" data-bind="org.phone"></div></div>
+   ${nav(null, "orgNext")}`;
+},
+branch() {
+  const b = S.branch;
+  return `<h1>${t("brT")}</h1><p class="muted">${t("brSub")}</p>
+   <div class="grid2"><div><label class="f" for="bname">${t("branchName")}</label><input class="inp" id="bname" value="${esc(b.name)}" data-bind="branch.name" placeholder="${t("branchNameHint")}">${err("bname")}</div>
+   <div><label class="f" for="barea">${t("area")}</label><input class="inp" id="barea" value="${esc(b.area)}" data-bind="branch.area" placeholder="Jayanagar"></div></div>
+   <div class="grid2"><div><label class="f" for="baddr">${t("addr")}</label><input class="inp" id="baddr" value="${esc(b.addr)}" data-bind="branch.addr" placeholder="12, 4th Block Main Road">${err("baddr")}</div>
+   <div><label class="f" for="bpin">${t("pin")}</label><input class="inp" id="bpin" inputmode="numeric" maxlength="6" value="${esc(b.pin)}" data-bind="branch.pin" placeholder="560011">${err("bpin")}</div></div>
+   <label class="f">${t("mapT")}</label>
+   <div class="map" id="map" role="application" aria-label="${t("mapT")}">${b.pinAt ? `<span class="pin" style="left:${b.pinAt[0]}%;top:${b.pinAt[1]}%">${PIN}</span>` : ""}</div>
+   <div class="row mt"><button class="btn sm" data-act="useLoc">◎ ${t("useLoc")}</button><span class="hint" id="pinState">${b.pinAt ? "<b>" + t("pinSet") + "</b>" : t("mapHint")}</span></div>${err("loc")}
+   <label class="f">${t("hoursT")}</label>
+   ${t("days").map((d, i) => { const h = b.hours[i]; return `<div class="hours"><b>${d}</b><label class="switch"><input type="checkbox" data-act="hOn" data-v="${i}" ${h.on ? "checked" : ""}> ${h.on ? t("open") : t("closed")}</label>${h.on ? `<span class="ex"></span><span class="row" style="flex-wrap:nowrap"><input type="time" class="inp" value="${h.from}" data-act="hFrom" data-v="${i}" aria-label="${d}"> – <input type="time" class="inp" value="${h.to}" data-act="hTo" data-v="${i}" aria-label="${d}"></span>` : "<span></span><span></span>"}</div>`; }).join("")}
+   <button class="btn sm" data-act="copyMon">${t("sameAll")}</button>${err("hours")}
+   <label class="switch mt"><input type="checkbox" data-bind="branch.wa" ${b.wa ? "checked" : ""}> ${t("whatsapp")}</label>
+   ${nav("org", "branchNext")}`;
+},
+products() {
+  const m = S.method, card = (k, ic, a, b) => `<button class="card-opt ${m === k ? "sel on" : ""}" data-act="method" data-v="${k}" aria-pressed="${m === k}"><span class="ic">${ic}</span><b>${t(a)}</b><div class="small">${t(b)}</div></button>`;
+  let panel = "";
+  if (m === "scan") panel = `<div class="banner info mt">📱 ${t("scanNote")}</div>`;
+  if (m === "csv") {
+    const c = S.csv;
+    if (c.stage === "none") panel = `<div class="mt"><button class="btn sun" data-act="useFile">⬆ ${t("useFile")}</button></div>`;
+    else if (c.stage === "checking") panel = `<div class="banner info mt" role="status">⏳ ${t("checking")}</div>`;
+    else {
+      const okN = c.rows.filter((r, i) => r[3] === "ok" || c.fixed[i]).length, badN = c.rows.length - okN;
+      panel = `<div class="row mt"><span class="pill">${t("ready", { n: okN })}</span><span class="pill ${badN ? "warn" : ""}">${t("attention", { n: badN })}</span></div>
+      <div class="tw mt"><table class="t"><tr><th>#</th><th>${t("itemName")}</th><th>${t("unit")}</th><th>${t("price")}</th><th></th></tr>${c.rows.map((r, i) => {
+        const bad = r[3] !== "ok" && !c.fixed[i];
+        return `<tr><td>${i + 1}</td><td>${esc(r[0])}</td><td>${esc(c.fixed[i] === "unit" ? "pcs" : r[1])}</td><td>${r[2]}</td><td>${bad ? `<span class="pill warn">${t(r[3] === "dup" ? "errDup" : "errUnit")}</span> <button class="btn sm" data-act="fixRow" data-v="${i}">${t("fix")}: ${t(r[3] === "dup" ? "mergeIt" : "setPcs")}</button>` : c.fixed[i] ? `<span class="pill">${t("fixed")} ✓</span>` : '<span class="pill">✓</span>'}</td></tr>`;
+      }).join("")}</table></div><div class="mt"><button class="btn pri" data-act="applyCsv" ${okN ? "" : "disabled"}>${t("applyN", { n: okN })}</button></div>`;
+    }
+  }
+  if (m === "manual") panel = `<div class="grid4 mt" style="align-items:end"><div style="grid-column:span 2"><label class="f" for="mn">${t("itemName")}</label><input class="inp" id="mn"></div><div><label class="f" for="mu">${t("unit")}</label><select class="inp" id="mu"><option>pcs</option><option>kg</option><option>pack</option><option>box</option><option>litre</option></select></div><div><label class="f" for="mp">${t("price")}</label><input class="inp" id="mp" inputmode="numeric"></div></div>${err("manual")}<div class="mt"><button class="btn sun" data-act="addManual">+ ${t("addItem")}</button></div>`;
+  if (m === "sample") panel = `<div class="mt"><button class="btn sun" data-act="loadSample">${t("sample")} →</button></div>`;
+  const list = S.products.length ? `<h3 class="mt2">${t("yourItems", { n: S.products.length })}</h3><div class="tw"><table class="t">${S.products.slice(0, 8).map((p) => `<tr><td>${esc(S.lang === "hi" && p.hi ? p.hi : p.name)}</td><td>${p.unit}</td><td>₹${p.price}</td></tr>`).join("")}${S.products.length > 8 ? `<tr><td colspan="3" class="muted">+ ${S.products.length - 8} …</td></tr>` : ""}</table></div>` : `<p class="muted mt2">${t("noItems")}</p>`;
+  return `<h1>${t("prT")}</h1><p class="muted">${t("prSub")}</p><div class="grid4">${card("scan", "📷", "scan", "scanD")}${card("csv", "📄", "csv", "csvD")}${card("manual", "⌨", "manual", "manualD")}${card("sample", "✨", "sample", "sampleD")}</div>${panel}${list}
+   ${nav("branch", "productsNext", t("next"), `<button class="btn ghost" data-act="skipProducts">${t("skip")}</button>`)}`;
+},
+stock() {
+  return `<h1>${t("stT")}</h1><p class="muted">${t("stSub")}</p><div class="banner info small">💡 ${t("tip")}</div>${err("qty")}
+   <div class="tw"><table class="t"><tr><th>${t("itemName")}</th><th>${t("qty")}</th><th>${t("low")}</th><th>${t("statusOnly")}</th></tr>${S.products.map((p, i) => `<tr><td>${esc(S.lang === "hi" && p.hi ? p.hi : p.name)}</td>
+    <td>${p.so ? `<span class="muted">—</span>` : `<input class="inp" style="width:90px;min-height:40px" inputmode="numeric" value="${p.qty}" data-act="qty" data-v="${i}" aria-label="${t("qty")}">`}</td>
+    <td>${p.so ? "—" : `<input class="inp" style="width:80px;min-height:40px" inputmode="numeric" value="${p.thr}" data-act="thr" data-v="${i}" aria-label="${t("low")}">`}</td>
+    <td><label class="switch"><input type="checkbox" data-act="so" data-v="${i}" ${p.so ? "checked" : ""}> ${p.so ? '<span class="pill">in stock</span>' : ""}</label></td></tr>`).join("")}</table></div>
+   ${nav("products", "stockNext")}`;
+},
+publish() {
+  const ck = [[t("ckPin"), !!S.branch.pinAt], [t("ckHours"), true], [t("ckItems"), S.products.some((p) => p.so || p.qty > 0)], [t("ckPhoto"), S.publish.photo]];
+  const p = S.products[0], blocked = !S.branch.pinAt || S.org.cat === "pharmacy";
+  return `<h1>${t("puT")}</h1><p class="muted">${t("puSub")}</p>
+   <h3>${t("checklist")}</h3>${ck.map(([l, ok], i) => `<div class="row" style="margin:6px 0"><span class="pill ${ok ? "" : "warn"}">${ok ? "✓" : "○"}</span> ${l}${i === 3 && !ok ? ` <button class="btn sm" data-act="photo">${t("addPhoto")}</button>` : ""}${i === 3 && ok ? ` <span class="muted small">${t("photoAdded")}</span>` : ""}</div>`).join("")}
+   <div class="grid2 mt2"><div>
+    <label class="switch"><input type="checkbox" data-bind="publish.branch" ${S.publish.branch ? "checked" : ""}> ${t("pubBranch")}</label><br><br>
+    <label class="switch"><input type="checkbox" data-bind="publish.prices" ${S.publish.prices ? "checked" : ""}> ${t("pubPrice")}</label><br><br>
+    <label class="switch"><input type="checkbox" data-bind="publish.review" ${S.publish.review ? "checked" : ""}> ${t("pubReview")}</label>
+    <p class="hint mt">🔒 ${t("noQty")}</p>${blocked ? `<div class="banner mt small">📍 ${S.org.cat === "pharmacy" ? t("pharmNote") : t("pinNeeded")}</div>` : ""}</div>
+   <div><h3>${t("preview")}</h3><div class="shopcard">${p ? `<b>${esc(S.lang === "hi" && p.hi ? p.hi : p.name)}</b>` : ""}<div class="small">${esc(S.org.name || "Your shop")} — ${esc(S.branch.name || "Main shop")} · 0.9 km</div>
+    <div class="row mt"><span class="lab">${t("availableL")}</span><span class="muted small">${t("updated")}</span></div>${S.publish.prices && p ? `<div class="price" style="font-size:20px;margin-top:6px">₹${p.price}</div>` : ""}
+    <div class="row mt"><button class="btn sm">📞</button><button class="btn sm">🧭</button>${S.branch.wa ? '<button class="btn sm">💬</button>' : ""}</div></div></div></div>
+   <div class="row between mt2"><button class="btn" data-act="goto" data-v="stock">← ${t("back")}</button><span class="row"><button class="btn" data-act="publishDraft">${t("saveDraft")}</button><button class="btn pri" data-act="publishLive" ${blocked ? "disabled" : ""}>${t("goLive")} →</button></span></div>`;
+},
+plans() {
+  const F = (k, f, p) => `<li><span>${t("feat." + k)}</span><b>${t("fv." + (S.plan === "x" ? "" : "") + (p ? p : f))}</b></li>`;
+  const rows = [["branches", "one", "many"], ["staff", "two", "more"], ["products", "nTbd", "nTbd"], ["scan", "yes", "yes"], ["offline", "yes", "yes"], ["csv", "yes", "yes"], ["counts", "yes", "yes"], ["transfers", "no", "yes"], ["reports", "basic", "adv"], ["rich", "no", "yes"], ["api", "no", "yes"], ["support", "std", "prio"], ["resv", "later", "later"]];
+  return `<h1>${t("plT")}</h1><p class="muted">${t("plSub")}</p><div class="banner">⚠ ${t("sampleBanner")}</div>
+   <div class="row"><span class="seg"><button class="${S.cycle === "monthly" ? "on" : ""}" data-act="cycle" data-v="monthly">${t("monthly")}</button><button class="${S.cycle === "annual" ? "on" : ""}" data-act="cycle" data-v="annual">${t("annual")}</button></span></div>
+   <div class="grid2 mt">
+    <div class="plan"><h2>${t("free")}</h2><div class="price">₹0</div><ul>${rows.map(([k, f]) => F(k, f)).join("")}</ul><button class="btn" data-act="pickFree">${t("contFree")}</button></div>
+    <div class="plan rec"><span class="pill bad" style="align-self:flex-start">★ ${t("recommended")}</span><h2>${t("premium")}</h2><div class="price">${t("tbd")}</div><div class="small">${S.cycle === "monthly" ? t("perMo") : t("perYr")} · ${t("trial")}</div><ul>${rows.map(([k, f, p]) => F(k, f, p)).join("")}</ul><button class="btn pri" data-act="pickPremium">${t("startPrem")}</button></div></div>
+   <div class="row mt2"><button class="btn" data-act="goto" data-v="publish">← ${t("back")}</button></div>`;
+},
+done() {
+  const live = S.publish.live;
+  return `<h1>🎉 ${t("doneT")}</h1><p>${live ? t("doneLive") : t("doneDraft")} ${t("doneRO", { p: t(S.plan === "premium" ? "premium" : "free") })}</p>
+   <div class="grid4"><div class="kpi"><b>${S.products.length}</b>${t("kItems")}</div><div class="kpi"><b>1</b>${t("kBranch")}</div><div class="kpi"><b>${t(S.plan === "premium" ? "premium" : "free")}</b>${t("kPlan")}</div><div class="kpi"><b>${live ? t("live") : t("draft")}</b>${t("kStatus")}</div></div>
+   <h3 class="mt2">${t("next2")}</h3><div class="grid3"><button class="card-opt">👥 ${t("n1")}</button><button class="card-opt">📱 ${t("n2")}</button><button class="card-opt">🔎 ${t("n3")}</button></div>
+   <div class="mt2"><button class="btn" data-act="restart">↺ ${t("restart")}</button></div>`;
+},
+};
+
+/* ---------------- keep icons inside the 4-colour palette: draw emoji as navy silhouettes ---------------- */
+function wrapEmoji(root) {
+  const rx = /\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*/gu, one = /\p{Extended_Pictographic}/u;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.parentElement.closest(".em,script,style,textarea,option") || !one.test(n.data) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
+  const nodes = []; while (w.nextNode()) nodes.push(w.currentNode);
+  for (const n of nodes) { const f = document.createDocumentFragment(); let last = 0;
+    n.data.replace(rx, (m, i) => { f.append(n.data.slice(last, i)); const sp = document.createElement("span"); sp.className = "em"; sp.textContent = m; f.append(sp); last = i + m.length; });
+    f.append(n.data.slice(last)); n.replaceWith(f); }
+}
+/* ---------------- render + events ---------------- */
+function render(focusSel) {
+  protoBar();
+  const app = $("#app"); app.className = "app" + (S.device === "phone" ? " phone" : "");
+  app.innerHTML = shell(screens[S.step]());
+  if (S.step === "otp") { const f = $("[data-otp]:not([disabled])"); if (f && !focusSel) f.focus(); }
+  if (focusSel) $(focusSel)?.focus();
+  else if (S.step !== "otp") $("#main h1")?.setAttribute("tabindex", "-1");
+  wrapEmoji(app);
+  if (S.step === "otp") tickResend();
+}
+let tick; function tickResend() { clearTimeout(tick); const w = Math.max(S.resendAt, S.lockUntil) - Date.now(); if (w > 0) tick = setTimeout(() => { if (S.step === "otp") render(); }, 1000); }
+const go = (s) => { S.errors = {}; S.step = s; render(); scrollTo({ top: 0 }); };
+const setErr = (k, m) => { S.errors[k] = m; const el = $("#e-" + k); if (el) { el.className = m ? "err" : ""; el.textContent = m || ""; el.setAttribute("role", "alert"); } };
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+const setPath = (path, v) => { const p = path.split("."); let o = S; for (const k of p.slice(0, -1)) o = o[k]; o[p.at(-1)] = v; };
+const GST = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+const A = {
+  lang: (v) => { S.lang = v; ls.set("p.lang", v); render(); },
+  device: (v) => { S.device = v; render(); },
+  sim: (v, el) => { S.sim[v] = el.checked; render(); },
+  goto: (v) => go(v),
+  async sendOtp() {
+    S.errors = {};
+    if (!/^[6-9]\d{9}$/.test(S.phone)) setErr("phone", t("phoneErr"));
+    if (!S.terms) setErr("terms", t("termsErr"));
+    if (S.errors.phone || S.errors.terms) return;
+    if (S.sim.offline) return setErr("phone", t("noNet"));
+    if (S.sends >= 3) return setErr("phone", t("sendLimit"));          // OTP_SEND_LIMIT (docs/01 I2)
+    S.sends++; S.channel = S.sim.otpdown ? "wa" : "sms"; S.fails = 0; S.resendAt = Date.now() + 30000; S.otpSentAt = Date.now();
+    go("otp"); if (S.sim.otpdown) { const d = $("#demo"); if (d) d.textContent = t("providerDown") + " " + t("demoOtp"); }
+  },
+  resend() { if (S.sim.offline) return setErr("otp", t("noNet")); if (S.sends >= 3) return setErr("otp", t("sendLimit")); S.sends++; S.resendAt = Date.now() + 30000; S.otpSentAt = Date.now(); S.fails = 0; render(); },
+  altChannel(v) { if (S.sends >= 3) return setErr("otp", t("sendLimit")); S.sends++; S.channel = v; S.resendAt = Date.now() + 30000; S.otpSentAt = Date.now(); render(); },
+  verifyOtp() {
+    if (Date.now() < S.lockUntil) return;
+    if (S.sim.offline) return setErr("otp", t("noNet"));
+    const code = $$("[data-otp]").map((i) => i.value).join("");
+    if (Date.now() - S.otpSentAt > 5 * 60e3) return setErr("otp", t("expired"));
+    if (code === "123456") return go("org");
+    S.fails++; if (S.fails >= 5) { S.lockUntil = Date.now() + 30000; S.fails = 0; S.errors = {}; return render(); }
+    setErr("otp", t("wrongOtp", { n: 5 - S.fails })); $$("[data-otp]").forEach((i) => (i.value = "")); $("[data-otp]")?.focus();
+  },
+  cat: (v) => { S.org.cat = v; render(); },
+  orgNext() {
+    S.errors = {};
+    if (S.org.name.trim().length < 2) setErr("oname", t("shopNameErr"));
+    if (S.org.gstin && !GST.test(S.org.gstin.toUpperCase())) setErr("gstin", t("gstinErr"));
+    if (!Object.keys(S.errors).length) go("branch"); else $("#e-oname[role],#e-gstin[role]")?.scrollIntoView({ block: "center" });
+  },
+  useLoc() {
+    if (S.sim.offline) return setErr("loc", t("noNet"));
+    if (!navigator.geolocation) { S.branch.pinAt = [48, 52]; return render(); }
+    navigator.geolocation.getCurrentPosition(() => { S.branch.pinAt = [48, 52]; render(); }, () => { setErr("loc", t("locDenied")); }, { timeout: 4000 });
+  },
+  hOn: (v, el) => { S.branch.hours[v].on = el.checked; render(); },
+  hFrom: (v, el) => { S.branch.hours[v].from = el.value; },
+  hTo: (v, el) => { S.branch.hours[v].to = el.value; },
+  copyMon() { const m = S.branch.hours[0]; for (let i = 1; i < 7; i++) S.branch.hours[i] = { ...m }; render(); },
+  branchNext() {
+    S.errors = {}; const b = S.branch;
+    if (b.name.trim().length < 2) setErr("bname", t("shopNameErr"));
+    if (b.addr.trim().length < 3) setErr("baddr", t("reqAddr"));
+    if (!/^\d{6}$/.test(b.pin)) setErr("bpin", t("pinErr"));
+    const bad = t("days").find((d, i) => b.hours[i].on && b.hours[i].to <= b.hours[i].from); if (bad) setErr("hours", t("hoursErr", { d: bad }));
+    if (!Object.keys(S.errors).length) go("products"); else $("#main .err[role]")?.scrollIntoView({ block: "center" });
+  },
+  method: (v) => { S.method = v; render(); },
+  async useFile() { S.csv = { stage: "checking", rows: [], fixed: {} }; render(); await delay(S.sim.offline ? 0 : 900); if (S.sim.offline) { S.csv.stage = "none"; render(); return setErr("manual", t("noNet")); } S.csv = { stage: "done", rows: CSV_ROWS, fixed: {} }; render(); },
+  fixRow: (v) => { S.csv.fixed[v] = CSV_ROWS[v][3] === "dup" ? "merge" : "unit"; render(); },
+  applyCsv() { CSV_ROWS.forEach((r, i) => { if (r[3] === "ok" || (S.csv.fixed[i] && S.csv.fixed[i] !== "merge")) S.products.push({ name: r[0], unit: S.csv.fixed[i] === "unit" ? "pcs" : r[1], price: r[2], qty: 10, thr: 3, so: false }); }); S.csv = { stage: "none", rows: [], fixed: {} }; S.method = null; render(); },
+  addManual() {
+    const n = $("#mn").value.trim(), p = Number($("#mp").value);
+    if (n.length < 2) return setErr("manual", t("shopNameErr"));
+    S.products.push({ name: n, unit: $("#mu").value, price: Number.isFinite(p) ? p : 0, qty: 10, thr: 3, so: false }); S.errors = {}; render("#mn");
+  },
+  loadSample() { S.products = SAMPLE.map(([name, hi, unit, price], i) => ({ name, hi, unit, price, qty: 8 + ((i * 7) % 40), thr: 5, so: i === 9 })); S.method = null; render(); },
+  productsNext: () => go("stock"), skipProducts: () => go("publish"),
+  qty(v, el) { const n = Number(el.value); if (!Number.isInteger(n) || n < 0) { setErr("qty", t("qtyErr")); el.setAttribute("aria-invalid", "true"); return; } setErr("qty", ""); el.removeAttribute("aria-invalid"); S.products[v].qty = n; },
+  thr(v, el) { const n = Number(el.value); if (Number.isInteger(n) && n >= 0) S.products[v].thr = n; },
+  so(v, el) { S.products[v].so = el.checked; render(); },
+  stockNext: () => go("publish"),
+  photo() { S.publish.photo = true; render(); },
+  publishLive() { S.publish.live = S.publish.branch; go("plans"); }, publishDraft() { S.publish.live = false; go("plans"); },
+  cycle: (v) => { S.cycle = v; render(); },
+  pickFree() { S.plan = "free"; go("done"); },
+  pickPremium() { S.pay = { state: "idle" }; payModal(); },
+  restart() { const keep = { lang: S.lang, style: S.style, device: S.device, sim: S.sim }; S = { ...fresh(), ...keep }; render(); },
+};
+function payModal() {
+  const box = $("#mbox"), s = S.pay.state;
+  box.innerHTML = `<h2>${t("payT")}</h2><p class="muted">${t("payNote")}</p>` + (s === "processing" ? `<div class="banner info" role="status">⏳ ${t("processing")}</div>` : s === "fail" ? `<div class="banner" role="alert">⚠ ${t("payFailMsg")}</div><div class="row"><button class="btn pri" data-act="pay">${t("retry")}</button><button class="btn" data-act="payFree">${t("contFree")}</button></div>` : s === "ok" ? `<div class="banner info">✓ ${t("payOk")}</div>` : `<div class="row"><button class="btn pri" data-act="pay">${t("payUpi")}</button><button class="btn" data-act="pay">${t("payCard")}</button><button class="btn ghost" data-act="payCancel">${t("cancel")}</button></div>`);
+  wrapEmoji(box); $("#modal").classList.add("on");
+}
+Object.assign(A, {
+  async pay() { S.pay.state = "processing"; payModal(); await delay(1100); if (S.sim.offline || S.sim.payfail) { S.pay.state = "fail"; return payModal(); } S.pay.state = "ok"; payModal(); await delay(700); S.plan = "premium"; $("#modal").classList.remove("on"); go("done"); },
+  payFree() { $("#modal").classList.remove("on"); A.pickFree(); }, payCancel() { $("#modal").classList.remove("on"); },
+});
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-act]"); if (!el || el.tagName === "INPUT" && el.type !== "checkbox") return;
+  if (el.tagName === "INPUT" && el.type === "checkbox" && e.type === "click") return;   // handled on change
+  A[el.dataset.act]?.(el.dataset.v, el);
+});
+document.addEventListener("change", (e) => {
+  const el = e.target; if (el.matches("input[type=checkbox][data-act]")) A[el.dataset.act]?.(el.dataset.v, el);
+  else if (el.matches("input[data-act]")) A[el.dataset.act]?.(el.dataset.v, el);
+  if (el.dataset.bind && el.type === "checkbox") { setPath(el.dataset.bind, el.checked); if (el.dataset.bind.startsWith("publish")) render(); }
+});
+document.addEventListener("input", (e) => {
+  const el = e.target;
+  if (el.dataset.bind && el.type !== "checkbox") {
+    let v = el.value; if (el.dataset.bind === "phone" || el.dataset.bind.endsWith("pin") || el.dataset.bind.endsWith("phone")) { v = v.replace(/\D/g, ""); el.value = v; }
+    if (el.dataset.bind === "org.gstin") { v = v.toUpperCase(); el.value = v; setErr("gstin", v && v.length === 15 && !GST.test(v) ? t("gstinErr") : ""); }
+    setPath(el.dataset.bind, v);
+  }
+  if (el.dataset.otp !== undefined) {
+    el.value = el.value.replace(/\D/g, "").slice(-1); const i = +el.dataset.otp;
+    if (el.value && i < 5) $(`[data-otp="${i + 1}"]`).focus();
+    if ($$("[data-otp]").every((x) => x.value)) A.verifyOtp();
+  }
+});
+document.addEventListener("keydown", (e) => { const el = e.target; if (el.dataset?.otp !== undefined && e.key === "Backspace" && !el.value && +el.dataset.otp > 0) $(`[data-otp="${+el.dataset.otp - 1}"]`).focus(); if (e.key === "Escape") $("#modal").classList.remove("on"); });
+document.addEventListener("paste", (e) => { if (e.target.dataset?.otp === undefined) return; const d = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6); if (!d) return; e.preventDefault(); $$("[data-otp]").forEach((x, i) => (x.value = d[i] || "")); if (d.length === 6) A.verifyOtp(); });
+// map: tap or drag the pin
+let drag = false;
+const place = (e) => { const m = $("#map"); if (!m) return; const r = m.getBoundingClientRect(); S.branch.pinAt = [Math.min(98, Math.max(2, ((e.clientX - r.left) / r.width) * 100)), Math.min(96, Math.max(8, ((e.clientY - r.top) / r.height) * 100))].map((n) => +n.toFixed(1)); m.innerHTML = `<span class="pin" style="left:${S.branch.pinAt[0]}%;top:${S.branch.pinAt[1]}%">${PIN}</span>`; const ps = $("#pinState"); if (ps) ps.innerHTML = `<b>${t("pinSet")}</b>`; setErr("loc", ""); };
+document.addEventListener("pointerdown", (e) => { if (e.target.closest("#map")) { drag = true; place(e); } });
+document.addEventListener("pointermove", (e) => { if (drag) place(e); });
+document.addEventListener("pointerup", () => (drag = false));
+$("#modal").addEventListener("click", (e) => { if (e.target.id === "modal" && S.pay.state !== "processing") $("#modal").classList.remove("on"); });
+
+const q = new URLSearchParams(location.search);   // ?style=b&lang=hi&device=phone&step=plans for quick links
+if (q.get("lang")) S.lang = q.get("lang") === "hi" ? "hi" : "en"; if (q.get("device") === "phone") S.device = "phone";
+if (q.get("step") && screens[q.get("step")]) { S.step = q.get("step"); S.phone = "9876543210"; S.org.name = "Sharma Hardware & Paints"; S.branch = { ...S.branch, name: "Jayanagar 4th Block", addr: "12, 4th Block", area: "Jayanagar", pin: "560011", pinAt: [48, 52] }; if (!["org", "branch"].includes(S.step)) { S.products = SAMPLE.map(([name, hi, unit, price], i) => ({ name, hi, unit, price, qty: 8 + ((i * 7) % 40), thr: 5, so: i === 9 })); } }
+render();
+})();
+</script>
+</body>
+</html>
