@@ -7,9 +7,12 @@ import type {
   ListProductsQuery,
   Member,
   MeResponse,
+  MovementPage,
   Org,
   ProductDetail,
   ProductPage,
+  StockPage,
+  StockSummary,
 } from "@idea01/schemas";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -100,5 +103,40 @@ export async function loadProduct(orgId: string, productId: string): Promise<Pro
   const api = await authedApi();
   return unwrap(
     api.GET("/v1/merchant/orgs/{orgId}/products/{productId}", { params: { path: { orgId, productId } } }),
+  );
+}
+
+export async function loadStock(
+  orgId: string,
+  branchId: string,
+  query: { q?: string; productId?: string; filter?: string; limit?: number; offset?: number },
+): Promise<StockPage> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/branches/{branchId}/stock", {
+      params: { path: { orgId, branchId }, query: query as Record<string, string | number | undefined> },
+    }),
+  );
+}
+
+export async function loadStockSummary(orgId: string, branchId: string): Promise<StockSummary> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/summary", {
+      params: { path: { orgId, branchId } },
+    }),
+  );
+}
+
+export async function loadMovements(
+  orgId: string,
+  branchId: string,
+  query: { productId?: string; limit?: number; offset?: number },
+): Promise<MovementPage> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/movements", {
+      params: { path: { orgId, branchId }, query },
+    }),
   );
 }

@@ -4,8 +4,8 @@ import {
   type CanonicalProduct,
   type Category,
   type CreateProduct,
-  type ListProductsQuery,
   type Listing,
+  type ListProductsQuery,
   type Product,
   type ProductDetail,
   type ProductPage,
@@ -19,7 +19,7 @@ import { Injectable } from "@nestjs/common";
 import { sql } from "kysely";
 import type { OrgContext } from "../auth/auth.types";
 import { writeAudit } from "../common/audit";
-import { Errors } from "../common/errors";
+import { Errors, pgCode } from "../common/errors";
 import { isoReq } from "../common/util";
 import { Db, type Trx } from "../db/db.service";
 
@@ -67,12 +67,18 @@ export class ProductsService {
     }));
   }
 
-  async searchCatalogue(org: OrgContext, userId: string, q: SearchCatalogueQuery): Promise<CanonicalProduct[]> {
+  async searchCatalogue(
+    org: OrgContext,
+    userId: string,
+    q: SearchCatalogueQuery,
+  ): Promise<CanonicalProduct[]> {
     return this.db.tx({ userId, orgId: org.orgId }, async (trx) => {
       const term = `%${likeEscape(q.q.toLowerCase())}%`;
       let query = trx
         .selectFrom("canonical_product as c")
-        .leftJoin("product as p", (j) => j.onRef("p.canonical_id", "=", "c.id").on("p.org_id", "=", org.orgId))
+        .leftJoin("product as p", (j) =>
+          j.onRef("p.canonical_id", "=", "c.id").on("p.org_id", "=", org.orgId),
+        )
         .select(["c.id", "c.name", "c.brand", "c.barcode", "c.category_id", "p.id as added_id"])
         .where((eb) =>
           eb.or([
@@ -132,7 +138,11 @@ export class ProductsService {
         trx,
         rows.map((r) => r.id),
       );
-      const counts = await this.publishedCounts(trx, org, rows.map((r) => r.id));
+      const counts = await this.publishedCounts(
+        trx,
+        org,
+        rows.map((r) => r.id),
+      );
       return {
         items: rows.map((r) => this.map(org, r as ProductRow, ids.get(r.id) ?? [], counts.get(r.id) ?? 0)),
         total: Number(total.n),
@@ -147,6 +157,18 @@ export class ProductsService {
   }
 
   async create(org: OrgContext, userId: string, dto: CreateProduct): Promise<ProductDetail> {
+    return this.mapUnique(
+      org,
+      userId,
+      [
+        ["barcode", dto.barcode],
+        ["sku", dto.sku],
+      ],
+      () => this.createTx(org, userId, dto),
+    );
+  }
+
+  private createTx(org: OrgContext, userId: string, dto: CreateProduct): Promise<ProductDetail> {
     return this.db.tx({ userId, orgId: org.orgId }, async (trx) => {
       await this.assertCategory(trx, dto.categoryId);
       await this.assertFree(trx, org.orgId, "barcode", dto.barcode);
@@ -194,8 +216,16 @@ export class ProductsService {
   }
 
   async addFromCatalogue(org: OrgContext, userId: string, dto: AddFromCatalogue): Promise<ProductDetail> {
+    return this.mapUnique(org, userId, [], () => this.addFromCatalogueTx(org, userId, dto));
+  }
+
+  private addFromCatalogueTx(org: OrgContext, userId: string, dto: AddFromCatalogue): Promise<ProductDetail> {
     return this.db.tx({ userId, orgId: org.orgId }, async (trx) => {
-      const c = await trx.selectFrom("canonical_product").selectAll().where("id", "=", dto.canonicalId).executeTakeFirst();
+      const c = await trx
+        .selectFrom("canonical_product")
+        .selectAll()
+        .where("id", "=", dto.canonicalId)
+        .executeTakeFirst();
       if (!c) throw Errors.notFound("Catalogue product");
       const existing = await trx
         .selectFrom("product")
@@ -246,11 +276,24 @@ export class ProductsService {
     return this.db.tx({ userId, orgId: org.orgId }, async (trx) => {
       const cur = await trx
         .selectFrom("product")
-        .select(["id", "status", "price_paise"])
+        .select(["id", "status", "price_paise", "unit"])
         .where("org_id", "=", org.orgId)
         .where("id", "=", id)
         .executeTakeFirst();
       if (!cur || cur.status === "merged") throw Errors.notFound("Product");
+      if (dto.unit !== undefined && dto.unit !== cur.unit) {
+        const used = await trx
+          .selectFrom("stock_movement")
+          .select("id")
+          .where("org_id", "=", org.orgId)
+          .where("product_id", "=", id)
+          .limit(1)
+          .executeTakeFirst();
+        if (used)
+          throw Errors.validation([
+            { path: "unit", message: "The unit cannot change after stock has been recorded." },
+          ]);
+      }
       if (dto.categoryId) await this.assertCategory(trx, dto.categoryId);
       const patch: Record<string, unknown> = {};
       const columns: Record<string, string> = {
@@ -282,7 +325,9 @@ export class ProductsService {
       await writeAudit(trx, {
         orgId: org.orgId,
         actorUserId: userId,
-        action: dto.status ? `product.${dto.status === "active" ? "activated" : "deactivated"}` : "product.updated",
+        action: dto.status
+          ? `product.${dto.status === "active" ? "activated" : "deactivated"}`
+          : "product.updated",
         targetType: "product",
         targetId: id,
         meta: { fields: Object.keys(dto) },
@@ -291,7 +336,25 @@ export class ProductsService {
     });
   }
 
-  async setIdentifiers(org: OrgContext, userId: string, id: string, dto: SetIdentifiers): Promise<ProductDetail> {
+  async setIdentifiers(
+    org: OrgContext,
+    userId: string,
+    id: string,
+    dto: SetIdentifiers,
+  ): Promise<ProductDetail> {
+    const wanted: Array<[string, string | undefined]> = [
+      ...dto.barcodes.map((v): [string, string] => ["barcode", v]),
+      ...dto.skus.map((v): [string, string] => ["sku", v]),
+    ];
+    return this.mapUnique(org, userId, wanted, () => this.setIdentifiersTx(org, userId, id, dto), id);
+  }
+
+  private setIdentifiersTx(
+    org: OrgContext,
+    userId: string,
+    id: string,
+    dto: SetIdentifiers,
+  ): Promise<ProductDetail> {
     return this.db.tx({ userId, orgId: org.orgId }, async (trx) => {
       await this.requireProduct(trx, org.orgId, id);
       const wanted: Ident[] = [
@@ -395,6 +458,40 @@ export class ProductsService {
 
   // ---------- helpers ----------
 
+  /**
+   * The pre-checks catch ordinary duplicates; two people saving the same barcode at the same instant are stopped by the
+   * unique index instead. Turn that into the same clear "already used by <product>" answer, never a 500.
+   */
+  private async mapUnique<T>(
+    org: OrgContext,
+    userId: string,
+    candidates: Array<[string, string | undefined]>,
+    fn: () => Promise<T>,
+    selfId?: string,
+  ): Promise<T> {
+    try {
+      return await fn();
+    } catch (err) {
+      if (pgCode(err) !== "23505") throw err;
+      const hit = await this.db.tx({ userId, orgId: org.orgId }, async (trx) => {
+        for (const [kind, value] of candidates) {
+          if (!value) continue;
+          const r = await trx
+            .selectFrom("product_identifier")
+            .select("product_id")
+            .where("org_id", "=", org.orgId)
+            .where("kind", "=", kind)
+            .where("value", "=", value)
+            .executeTakeFirst();
+          if (r && r.product_id !== selfId) return { kind, id: r.product_id };
+        }
+        return null;
+      });
+      if (!hit) throw Errors.duplicate("This already exists.");
+      throw Errors.duplicateIdentifier(hit.kind === "sku" ? "product code" : hit.kind, hit.id);
+    }
+  }
+
   private async detail(trx: Trx, org: OrgContext, id: string): Promise<ProductDetail> {
     const row = await trx
       .selectFrom("product")
@@ -406,7 +503,9 @@ export class ProductsService {
     const ids = await this.identifiersFor(trx, [id]);
     let bq = trx
       .selectFrom("branch as b")
-      .leftJoin("merchant_listing as l", (j) => j.onRef("l.branch_id", "=", "b.id").on("l.product_id", "=", id))
+      .leftJoin("merchant_listing as l", (j) =>
+        j.onRef("l.branch_id", "=", "b.id").on("l.product_id", "=", id),
+      )
       .select([
         "b.id as branch_id",
         "b.name as branch_name",
@@ -483,7 +582,8 @@ export class ProductsService {
       .orderBy("kind")
       .orderBy("value")
       .execute();
-    for (const r of rows) out.set(r.product_id, [...(out.get(r.product_id) ?? []), { kind: r.kind, value: r.value }]);
+    for (const r of rows)
+      out.set(r.product_id, [...(out.get(r.product_id) ?? []), { kind: r.kind, value: r.value }]);
     return out;
   }
 
@@ -493,7 +593,13 @@ export class ProductsService {
   }
 
   /** Barcode, SKU and short code are unique per shop; the error points at the product that already has it. */
-  private async assertFree(trx: Trx, orgId: string, kind: string, value: string | undefined, selfId?: string) {
+  private async assertFree(
+    trx: Trx,
+    orgId: string,
+    kind: string,
+    value: string | undefined,
+    selfId?: string,
+  ) {
     if (!value) return;
     const hit = await trx
       .selectFrom("product_identifier")
@@ -509,7 +615,8 @@ export class ProductsService {
   private async newShortCode(trx: Trx, orgId: string): Promise<string> {
     for (let i = 0; i < 10; i++) {
       let code = "";
-      for (let n = 0; n < 6; n++) code += SHORT_CODE_ALPHABET[Math.floor(Math.random() * SHORT_CODE_ALPHABET.length)];
+      for (let n = 0; n < 6; n++)
+        code += SHORT_CODE_ALPHABET[Math.floor(Math.random() * SHORT_CODE_ALPHABET.length)];
       const hit = await trx
         .selectFrom("product_identifier")
         .select("product_id")

@@ -37,6 +37,9 @@ export default async function ProductPage({ params }: { params: Promise<{ produc
             ← {t("back")}
           </Link>
           <h1 className="mt-2 text-3xl font-extrabold">{product.name}</h1>
+          <Link href={`/app/stock/${product.id}`} className="mt-1 inline-block font-bold underline">
+            {t("openStock")}
+          </Link>
           {product.nameHi && (
             <p lang="hi" className="text-lg">
               {product.nameHi}

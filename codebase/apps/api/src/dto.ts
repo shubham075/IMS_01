@@ -1,34 +1,45 @@
 import {
   addFromCatalogueSchema,
+  branchSchema,
   canonicalProductSchema,
   categorySchema,
-  createProductSchema,
-  listProductsQuerySchema,
-  productDetailSchema,
-  productPageSchema,
-  searchCatalogueQuerySchema,
-  setIdentifiersSchema,
-  setListingSchema,
-  updateProductSchema,
-  branchSchema,
   createBranchSchema,
   createInvitationSchema,
   createOrgSchema,
+  createProductSchema,
   invitationSchema,
+  listMovementsQuerySchema,
+  listProductsQuerySchema,
+  listStockQuerySchema,
   logoutRequestSchema,
   memberSchema,
   membershipSummarySchema,
   meResponseSchema,
+  movementPageSchema,
+  movementResultSchema,
   orgSchema,
   otpRequestResponseSchema,
   otpRequestSchema,
   otpVerifySchema,
   problemSchema,
+  productDetailSchema,
+  productPageSchema,
+  recordMovementSchema,
   refreshRequestSchema,
+  reverseMovementSchema,
+  searchCatalogueQuerySchema,
+  setIdentifiersSchema,
+  setListingSchema,
+  setStatusSchema,
+  setThresholdSchema,
+  stockLineSchema,
+  stockPageSchema,
+  stockSummarySchema,
   tokenResponseSchema,
   updateBranchSchema,
   updateMemberSchema,
   updateOrgSchema,
+  updateProductSchema,
   updateProfileSchema,
   userProfileSchema,
 } from "@idea01/schemas";
@@ -72,6 +83,18 @@ export class ListProductsQueryDto extends createZodDto(listProductsQuerySchema) 
 export class SearchCatalogueQueryDto extends createZodDto(searchCatalogueQuerySchema) {}
 export class ProductDetailDto extends createZodDto(productDetailSchema) {}
 export class ProductPageDto extends createZodDto(productPageSchema) {}
+
+export class RecordMovementDto extends createZodDto(recordMovementSchema) {}
+export class ReverseMovementDto extends createZodDto(reverseMovementSchema) {}
+export class SetStatusDto extends createZodDto(setStatusSchema) {}
+export class SetThresholdDto extends createZodDto(setThresholdSchema) {}
+export class ListStockQueryDto extends createZodDto(listStockQuerySchema) {}
+export class ListMovementsQueryDto extends createZodDto(listMovementsQuerySchema) {}
+export class StockLineDto extends createZodDto(stockLineSchema) {}
+export class StockPageDto extends createZodDto(stockPageSchema) {}
+export class StockSummaryDto extends createZodDto(stockSummarySchema) {}
+export class MovementPageDto extends createZodDto(movementPageSchema) {}
+export class MovementResultDto extends createZodDto(movementResultSchema) {}
 
 export class ProblemDto extends createZodDto(problemSchema) {}
 

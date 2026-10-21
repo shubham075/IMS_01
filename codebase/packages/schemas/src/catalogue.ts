@@ -10,12 +10,22 @@ export const allowsFraction = (unit: Unit): boolean => FRACTIONAL_UNITS.includes
 
 export const TRACKING_MODES = ["quantity", "status_only"] as const;
 
-const text = (max: number) => z.string().trim().max(max);
+/** Control characters (e.g. a NUL byte) are never valid in names or notes; tab and new line are fine in long text. */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: rejecting control characters is the point
+const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
+export const safeText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .refine((v) => !CONTROL_CHARS.test(v), "Remove unusual characters.");
+const text = safeText;
 const productName = z
   .string()
   .trim()
   .min(2, "Enter the product name (at least 2 letters).")
-  .max(120, "Product name is too long.");
+  .max(120, "Product name is too long.")
+  .refine((v) => !CONTROL_CHARS.test(v), "Remove unusual characters.");
 
 /** Integer paise (₹1 = 100 paise); never floating-point money. Max ₹1 crore per unit. */
 export const paiseSchema = z
@@ -32,16 +42,20 @@ const skuSchema = z
   .string()
   .trim()
   .regex(/^[0-9A-Za-z][0-9A-Za-z._/-]{0,39}$/, "Product code can use letters, digits and . _ / - (max 40).");
-const aliasSchema = z.string().trim().min(2).max(40);
+const aliasSchema = z
+  .string()
+  .trim()
+  .min(2)
+  .max(40)
+  .refine((v) => !CONTROL_CHARS.test(v), "Remove unusual characters.");
 
 export const identifierKindSchema = z.enum(["barcode", "sku", "alias", "short_code"]);
 export const identifierSchema = z.object({ kind: identifierKindSchema, value: z.string() });
 export type Identifier = z.infer<typeof identifierSchema>;
 
-const attrsSchema = z.record(z.string().max(40), z.union([z.string().max(100), z.number(), z.boolean()])).refine(
-  (a) => Object.keys(a).length <= 20,
-  "Too many attributes.",
-);
+const attrsSchema = z
+  .record(z.string().max(40), z.union([z.string().max(100), z.number(), z.boolean()]))
+  .refine((a) => Object.keys(a).length <= 20, "Too many attributes.");
 
 // Defaults are added only for create (below). A partial() of a field with a default would still inject it.
 const productFields = z.object({

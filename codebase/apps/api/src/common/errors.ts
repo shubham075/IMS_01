@@ -68,6 +68,33 @@ export const Errors = {
     new AppError(409, "DUPLICATE_IDENTIFIER", `Another product already uses this ${what}.`, { existingId }),
   restrictedCategory: () =>
     new AppError(422, "RESTRICTED_CATEGORY", "Products in this category cannot be shown to shoppers."),
+  confirmRequired: (detail = "This is much larger than usual. Check it and confirm.") =>
+    new AppError(422, "CONFIRM_REQUIRED", detail),
+  openingAlreadySet: () =>
+    new AppError(409, "OPENING_ALREADY_SET", "Opening stock is already set. Use an adjustment to change it."),
+  /** Maps the HINT that database functions attach to their errors (docs/01 §0.2) to an API error. Unknown hints return null. */
+  fromHint: (hint: string | undefined, detail: string): AppError | null => {
+    switch (hint) {
+      case "VALIDATION_FAILED":
+        return new AppError(400, "VALIDATION_FAILED", detail);
+      case "DATE_OUT_OF_RANGE":
+        return new AppError(400, "DATE_OUT_OF_RANGE", "The date is too far in the past or in the future.");
+      case "QTY_NOT_INTEGRAL":
+        return new AppError(422, "QTY_NOT_INTEGRAL", "This product is counted in whole units.");
+      case "PRODUCT_INACTIVE":
+        return new AppError(422, "PRODUCT_INACTIVE", "Switch the product on before recording stock.");
+      case "NOT_FOUND":
+        return new AppError(404, "NOT_FOUND", "Not found.");
+      case "ALREADY_REVERSED":
+        return new AppError(
+          409,
+          "ALREADY_REVERSED",
+          "This entry was already reversed, or is itself a reversal.",
+        );
+      default:
+        return null;
+    }
+  },
   branchNotReady: (detail: string) => new AppError(422, "BRANCH_NOT_READY", detail),
   conflict: (detail: string) => new AppError(409, "VERSION_CONFLICT", detail),
   lastOwner: () => new AppError(409, "LAST_OWNER", "An organisation must keep at least one owner."),

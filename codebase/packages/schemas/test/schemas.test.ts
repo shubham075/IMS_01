@@ -11,6 +11,7 @@ import {
   phoneSchema,
   ROLE_RANK,
   ROLES,
+  recordMovementSchema,
   updateBranchSchema,
   updateMemberSchema,
   updateOrgSchema,
@@ -161,15 +162,66 @@ describe("team", () => {
 describe("product create vs update", () => {
   const base = { name: "Claw hammer", categoryId: "3f2b1c0e-9d3a-4b6e-8f1a-2c4d5e6f7a8b" };
   it("create fills in defaults", () => {
-    expect(createProductSchema.parse(base)).toMatchObject({ unit: "pcs", trackingMode: "quantity", lowStockThreshold: 0 });
+    expect(createProductSchema.parse(base)).toMatchObject({
+      unit: "pcs",
+      trackingMode: "quantity",
+      lowStockThreshold: 0,
+    });
   });
   it("update never injects defaults, and an empty update is rejected", () => {
     expect(updateProductSchema.safeParse({}).success).toBe(false);
     expect(updateProductSchema.parse({ name: "Renamed" })).toEqual({ name: "Renamed" });
   });
   it("prices are whole paise, never negative", () => {
-    for (const pricePaise of [-1, 12.5, 1e12]) expect(createProductSchema.safeParse({ ...base, pricePaise }).success).toBe(false);
+    for (const pricePaise of [-1, 12.5, 1e12])
+      expect(createProductSchema.safeParse({ ...base, pricePaise }).success).toBe(false);
     expect(createProductSchema.safeParse({ ...base, pricePaise: 0 }).success).toBe(true);
     expect(updateProductSchema.parse({ pricePaise: null })).toEqual({ pricePaise: null });
+  });
+});
+
+describe("stock movements", () => {
+  const base = {
+    productId: "3f2b1c0e-9d3a-4b6e-8f1a-2c4d5e6f7a8b",
+    eventId: "5a1f6e44-8f43-4a62-9d0e-7c1b2f3a4d5e",
+  };
+  it("quantity must be positive, with at most three decimals", () => {
+    for (const quantity of [0, -1, 1.0005, 1e9]) {
+      expect(
+        recordMovementSchema.safeParse({ ...base, kind: "receipt", quantity }).success,
+        String(quantity),
+      ).toBe(false);
+    }
+    expect(recordMovementSchema.safeParse({ ...base, kind: "receipt", quantity: 2.5 }).success).toBe(true);
+  });
+  it("an adjustment needs a direction and a reason", () => {
+    expect(recordMovementSchema.safeParse({ ...base, kind: "adjustment", quantity: 1 }).success).toBe(false);
+    expect(
+      recordMovementSchema.safeParse({ ...base, kind: "adjustment", quantity: 1, direction: "in" }).success,
+    ).toBe(false);
+    expect(
+      recordMovementSchema.safeParse({
+        ...base,
+        kind: "adjustment",
+        quantity: 1,
+        direction: "in",
+        note: "recount",
+      }).success,
+    ).toBe(true);
+  });
+  it("control characters are rejected in notes and names", () => {
+    expect(
+      recordMovementSchema.safeParse({ ...base, kind: "receipt", quantity: 1, note: "a\u0000b" }).success,
+    ).toBe(false);
+    expect(createProductSchema.safeParse({ name: "bad\u0000name", categoryId: base.productId }).success).toBe(
+      false,
+    );
+    expect(
+      createProductSchema.safeParse({
+        name: "fine name",
+        categoryId: base.productId,
+        description: "two\nlines",
+      }).success,
+    ).toBe(true);
   });
 });

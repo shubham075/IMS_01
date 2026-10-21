@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Put, Query, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ZodResponse } from "nestjs-zod";
 import type { AuthContext, OrgContext } from "../auth/auth.types";
@@ -37,7 +48,11 @@ export class ProductsController {
   @Get("catalogue/search")
   @ApiOperation({ summary: "Search the shared catalogue" })
   @ZodResponse({ status: 200, type: [CanonicalProductDto] })
-  search(@CurrentAuth() auth: AuthContext, @CurrentOrg() org: OrgContext, @Query() q: SearchCatalogueQueryDto) {
+  search(
+    @CurrentAuth() auth: AuthContext,
+    @CurrentOrg() org: OrgContext,
+    @Query() q: SearchCatalogueQueryDto,
+  ) {
     return this.products.searchCatalogue(org, auth.userId, q);
   }
 
@@ -62,7 +77,11 @@ export class ProductsController {
   @Permissions("catalogue.write")
   @ApiOperation({ summary: "Add a product from the shared catalogue" })
   @ZodResponse({ status: 201, type: ProductDetailDto })
-  fromCatalogue(@CurrentAuth() auth: AuthContext, @CurrentOrg() org: OrgContext, @Body() dto: AddFromCatalogueDto) {
+  fromCatalogue(
+    @CurrentAuth() auth: AuthContext,
+    @CurrentOrg() org: OrgContext,
+    @Body() dto: AddFromCatalogueDto,
+  ) {
     return this.products.addFromCatalogue(org, auth.userId, dto);
   }
 

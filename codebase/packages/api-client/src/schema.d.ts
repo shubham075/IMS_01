@@ -368,6 +368,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock of every product at this branch */
+        get: operations["StockController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many products are low, out, or need a check */
+        get: operations["StockController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock history */
+        get: operations["StockController_movements"];
+        put?: never;
+        /** Record stock in, a sale, a return, an adjustment… */
+        post: operations["StockController_record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/movements/{movementId}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo an entry (once) by adding the opposite entry */
+        post: operations["StockController_reverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Mark an uncounted product in stock or out of stock */
+        put: operations["StockController_setStatus"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/threshold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the low-stock level for one product at this branch */
+        put: operations["StockController_setThreshold"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orgs/{orgId}/members": {
         parameters: {
             query?: never;
@@ -474,7 +577,7 @@ export interface components {
             title: string;
             status: number;
             /** @enum {string} */
-            code: "VALIDATION_FAILED" | "UNIT_NOT_CONVERTIBLE" | "QTY_NOT_INTEGRAL" | "DATE_OUT_OF_RANGE" | "AUTH_REQUIRED" | "TOKEN_EXPIRED" | "TOKEN_REVOKED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_LOCKED" | "PERMISSION_DENIED" | "BRANCH_OUT_OF_SCOPE" | "ENTITLEMENT_REQUIRED" | "ACCOUNT_SUSPENDED" | "STEP_UP_REQUIRED" | "TERMS_REQUIRED" | "NOT_FOUND" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_IN_PROGRESS" | "VERSION_CONFLICT" | "DUPLICATE" | "DUPLICATE_IDENTIFIER" | "RESTRICTED_CATEGORY" | "BRANCH_NOT_READY" | "LAST_OWNER" | "PRODUCT_INACTIVE" | "CLIENT_UPGRADE_REQUIRED" | "RATE_LIMITED" | "OTP_SEND_LIMIT" | "OTP_DELIVERY_FAILED" | "DEPENDENCY_UNAVAILABLE" | "INTERNAL_ERROR";
+            code: "VALIDATION_FAILED" | "UNIT_NOT_CONVERTIBLE" | "QTY_NOT_INTEGRAL" | "DATE_OUT_OF_RANGE" | "AUTH_REQUIRED" | "TOKEN_EXPIRED" | "TOKEN_REVOKED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_LOCKED" | "PERMISSION_DENIED" | "BRANCH_OUT_OF_SCOPE" | "ENTITLEMENT_REQUIRED" | "ACCOUNT_SUSPENDED" | "STEP_UP_REQUIRED" | "TERMS_REQUIRED" | "NOT_FOUND" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_IN_PROGRESS" | "VERSION_CONFLICT" | "DUPLICATE" | "DUPLICATE_IDENTIFIER" | "CONFIRM_REQUIRED" | "ALREADY_REVERSED" | "OPENING_ALREADY_SET" | "RESTRICTED_CATEGORY" | "BRANCH_NOT_READY" | "LAST_OWNER" | "PRODUCT_INACTIVE" | "CLIENT_UPGRADE_REQUIRED" | "RATE_LIMITED" | "OTP_SEND_LIMIT" | "OTP_DELIVERY_FAILED" | "DEPENDENCY_UNAVAILABLE" | "INTERNAL_ERROR";
             detail?: string;
             trace_id?: string;
             retry_after?: number;
@@ -861,6 +964,168 @@ export interface components {
             pricePaise?: number | null;
             /** @default false */
             temporarilyUnavailable: boolean;
+        };
+        StockPageDto_Output: {
+            items: {
+                /** Format: uuid */
+                productId: string;
+                name: string;
+                nameHi: string | null;
+                unit: string;
+                allowFraction: boolean;
+                /** @enum {string} */
+                trackingMode: "quantity" | "status_only";
+                /** @description Barcode or quick code, for finding the product */
+                code: string | null;
+                onHand: number;
+                unsellable: number;
+                sellable: number;
+                /** @description The level that counts as low for this branch */
+                threshold: number;
+                thresholdIsCustom: boolean;
+                isLow: boolean;
+                isOut: boolean;
+                /** @description Stock went below zero: counts are probably out of step */
+                needsCheck: boolean;
+                statusOverride: ("in_stock" | "out_of_stock") | null;
+                lastMovementAt: string | null;
+            }[];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        StockSummaryDto_Output: {
+            products: number;
+            low: number;
+            out: number;
+            needsCheck: number;
+        };
+        RecordMovementDto: {
+            /** Format: uuid */
+            productId: string;
+            /** @enum {string} */
+            kind: "opening" | "receipt" | "sale" | "customer_return" | "supplier_return" | "adjustment" | "damage" | "expiry" | "loss" | "found";
+            quantity: number;
+            /**
+             * @description Needed only for an adjustment
+             * @enum {string}
+             */
+            direction?: "in" | "out";
+            /**
+             * @description Customer return that cannot be resold
+             * @default false
+             */
+            returnToUnsellable: boolean;
+            note?: string;
+            /**
+             * Format: date-time
+             * @description When it happened; defaults to now. At most 30 days back.
+             */
+            occurredAt?: string;
+            /**
+             * Format: uuid
+             * @description Made once per form; sending it again never counts twice
+             */
+            eventId: string;
+            /**
+             * @description Yes, this unusually large amount is correct
+             * @default false
+             */
+            confirmLarge: boolean;
+        };
+        MovementResultDto_Output: {
+            /** Format: uuid */
+            movementId: string;
+            /** @description true when this eventId had already been recorded */
+            duplicate: boolean;
+            line: {
+                /** Format: uuid */
+                productId: string;
+                name: string;
+                nameHi: string | null;
+                unit: string;
+                allowFraction: boolean;
+                /** @enum {string} */
+                trackingMode: "quantity" | "status_only";
+                /** @description Barcode or quick code, for finding the product */
+                code: string | null;
+                onHand: number;
+                unsellable: number;
+                sellable: number;
+                /** @description The level that counts as low for this branch */
+                threshold: number;
+                thresholdIsCustom: boolean;
+                isLow: boolean;
+                isOut: boolean;
+                /** @description Stock went below zero: counts are probably out of step */
+                needsCheck: boolean;
+                statusOverride: ("in_stock" | "out_of_stock") | null;
+                lastMovementAt: string | null;
+            };
+        };
+        MovementPageDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                productId: string;
+                productName: string;
+                /** Format: date-time */
+                occurredAt: string;
+                reason: string;
+                qtyDelta: number;
+                /** @enum {string} */
+                bucket: "on_hand" | "unsellable";
+                note: string | null;
+                source: string;
+                actorName: string | null;
+                isReversal: boolean;
+                isReversed: boolean;
+            }[];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        ReverseMovementDto: {
+            /** Format: uuid */
+            eventId: string;
+            note?: string;
+        };
+        SetStatusDto: {
+            /** Format: uuid */
+            productId: string;
+            /** @enum {string} */
+            status: "in_stock" | "out_of_stock";
+        };
+        StockLineDto_Output: {
+            /** Format: uuid */
+            productId: string;
+            name: string;
+            nameHi: string | null;
+            unit: string;
+            allowFraction: boolean;
+            /** @enum {string} */
+            trackingMode: "quantity" | "status_only";
+            /** @description Barcode or quick code, for finding the product */
+            code: string | null;
+            onHand: number;
+            unsellable: number;
+            sellable: number;
+            /** @description The level that counts as low for this branch */
+            threshold: number;
+            thresholdIsCustom: boolean;
+            isLow: boolean;
+            isOut: boolean;
+            /** @description Stock went below zero: counts are probably out of step */
+            needsCheck: boolean;
+            statusOverride: ("in_stock" | "out_of_stock") | null;
+            lastMovementAt: string | null;
+        };
+        SetThresholdDto: {
+            /** Format: uuid */
+            productId: string;
+            /** @description null = use the product's level */
+            threshold: number | null;
         };
         MemberDto_Output: {
             /** Format: uuid */
@@ -1753,6 +2018,253 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProductDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    StockController_list: {
+        parameters: {
+            query?: {
+                productId?: string;
+                q?: string;
+                filter?: "all" | "low" | "out" | "check";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockPageDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    StockController_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockSummaryDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    StockController_movements: {
+        parameters: {
+            query?: {
+                productId?: string;
+                reason?: string;
+                from?: string;
+                to?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementPageDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    StockController_record: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordMovementDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementResultDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    StockController_reverse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                movementId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseMovementDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementResultDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    StockController_setStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockLineDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    StockController_setThreshold: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetThresholdDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockLineDto_Output"];
                 };
             };
             /** @description Error (application/problem+json) */

@@ -49,7 +49,11 @@ async function join(s: S, role: Exclude<Role, "owner">, branchIds: string[] = []
   return c;
 }
 
-const hammer = (over: Record<string, unknown> = {}) => ({ name: "Claw hammer 500g", categoryId: hardware.id, ...over });
+const hammer = (over: Record<string, unknown> = {}) => ({
+  name: "Claw hammer 500g",
+  categoryId: hardware.id,
+  ...over,
+});
 const create = async (s: S, over: Record<string, unknown> = {}) => {
   const r = await s.owner.post<ProductDetail>(`${s.base}/products`, hammer(over));
   expect(r.status, JSON.stringify(r.body)).toBe(201);
@@ -62,14 +66,24 @@ const show = (s: S, productId: string, over: Record<string, unknown> = {}) =>
     ...over,
   });
 const publicRow = async (branchId: string, productId: string) =>
-  (await admin.query("select * from public_listing where branch_id = $1 and product_id = $2", [branchId, productId]))
-    .rows[0];
+  (
+    await admin.query("select * from public_listing where branch_id = $1 and product_id = $2", [
+      branchId,
+      productId,
+    ])
+  ).rows[0];
 
 describe("custom products", () => {
   it("creates a product with a short code, sensible defaults, and no cost for read-only people", async () => {
     const s = await setup();
     const p = await create(s, { pricePaise: 25000, costPaise: 18000, nameHi: "हथौड़ा" });
-    expect(p).toMatchObject({ name: "Claw hammer 500g", unit: "pcs", allowFraction: false, status: "active", pricePaise: 25000 });
+    expect(p).toMatchObject({
+      name: "Claw hammer 500g",
+      unit: "pcs",
+      allowFraction: false,
+      status: "active",
+      pricePaise: 25000,
+    });
     expect(p.shortCode).toMatch(/^[2-9A-HJ-NP-Z]{6}$/);
     expect(p.costPaise).toBe(18000);
     expect(p.listings).toHaveLength(1);
@@ -89,7 +103,14 @@ describe("custom products", () => {
 
   it("rejects bad input with field messages", async () => {
     const s = await setup();
-    for (const bad of [{ name: "A" }, { pricePaise: -1 }, { pricePaise: 12.5 }, { unit: "tonne" }, { barcode: "no" }, { categoryId: "x" }]) {
+    for (const bad of [
+      { name: "A" },
+      { pricePaise: -1 },
+      { pricePaise: 12.5 },
+      { unit: "tonne" },
+      { barcode: "no" },
+      { categoryId: "x" },
+    ]) {
       const r = await s.owner.post(`${s.base}/products`, hammer(bad));
       expect(r.status, JSON.stringify(bad)).toBe(400);
       expect(r.body.code).toBe("VALIDATION_FAILED");
@@ -109,7 +130,10 @@ describe("custom products", () => {
     );
     expect(a.shortCode).toBeNull(); // a barcode is enough
 
-    const dupBarcode = await s.owner.post(`${s.base}/products`, hammer({ name: "Other", barcode: "8901234567890" }));
+    const dupBarcode = await s.owner.post(
+      `${s.base}/products`,
+      hammer({ name: "Other", barcode: "8901234567890" }),
+    );
     expect(dupBarcode.status).toBe(409);
     expect(dupBarcode.body).toMatchObject({ code: "DUPLICATE_IDENTIFIER", existing_id: a.id });
     const dupSku = await s.owner.post(`${s.base}/products`, hammer({ name: "Other", sku: "HAM-500" }));
@@ -135,11 +159,10 @@ describe("custom products", () => {
 describe("shared catalogue", () => {
   const seedCanonical = async (name: string, barcode: string | null = null, categoryId = hardware.id) =>
     (
-      await admin.query("insert into canonical_product (name, brand, barcode, category_id) values ($1,'Taparia',$2,$3) returning id", [
-        name,
-        barcode,
-        categoryId,
-      ])
+      await admin.query(
+        "insert into canonical_product (name, brand, barcode, category_id) values ($1,'Taparia',$2,$3) returning id",
+        [name, barcode, categoryId],
+      )
     ).rows[0].id as string;
 
   it("finds products by name, brand or barcode and shows which are already added", async () => {
@@ -152,9 +175,18 @@ describe("shared catalogue", () => {
     const byBarcode = await s.owner.get<CanonicalProduct[]>(`${s.base}/catalogue/search?q=8900000000011`);
     expect(byBarcode.body.map((c) => c.id)).toEqual([id]);
 
-    const added = await s.owner.post<ProductDetail>(`${s.base}/products/from-catalogue`, { canonicalId: id, pricePaise: 49900 });
+    const added = await s.owner.post<ProductDetail>(`${s.base}/products/from-catalogue`, {
+      canonicalId: id,
+      pricePaise: 49900,
+    });
     expect(added.status).toBe(201);
-    expect(added.body).toMatchObject({ name: `${tag} screwdriver set`, brand: "Taparia", canonicalId: id, pricePaise: 49900, categoryId: hardware.id });
+    expect(added.body).toMatchObject({
+      name: `${tag} screwdriver set`,
+      brand: "Taparia",
+      canonicalId: id,
+      pricePaise: 49900,
+      categoryId: hardware.id,
+    });
     expect(added.body.identifiers).toEqual([{ kind: "barcode", value: "8900000000011" }]);
 
     const again = await s.owner.get<CanonicalProduct[]>(`${s.base}/catalogue/search?q=${tag.toLowerCase()}`);
@@ -167,7 +199,9 @@ describe("shared catalogue", () => {
   it("an empty search is rejected and an unknown catalogue product is 404", async () => {
     const s = await setup();
     expect((await s.owner.get(`${s.base}/catalogue/search?q=`)).status).toBe(400);
-    expect((await s.owner.post(`${s.base}/products/from-catalogue`, { canonicalId: randomUUID() })).status).toBe(404);
+    expect(
+      (await s.owner.post(`${s.base}/products/from-catalogue`, { canonicalId: randomUUID() })).status,
+    ).toBe(404);
   });
 });
 
@@ -179,7 +213,8 @@ describe("listing and editing", () => {
     const c = await create(s, { name: "Gamma file" });
     await s.owner.patch(`${s.base}/products/${c.id}`, { status: "inactive" });
 
-    const names = async (qs: string) => (await s.owner.get<ProductPage>(`${s.base}/products${qs}`)).body.items.map((p) => p.name);
+    const names = async (qs: string) =>
+      (await s.owner.get<ProductPage>(`${s.base}/products${qs}`)).body.items.map((p) => p.name);
     expect(await names("")).toEqual(["Alpha drill", "Beta saw"]);
     expect(await names("?status=inactive")).toEqual(["Gamma file"]);
     expect(await names("?status=all")).toHaveLength(3);
@@ -197,7 +232,10 @@ describe("listing and editing", () => {
     const r = await s.owner.patch<ProductDetail>(`${s.base}/products/${p.id}`, { name: "Renamed" });
     expect(r.body).toMatchObject({ name: "Renamed", unit: "kg", lowStockThreshold: 5, pricePaise: 1000 });
     expect((await s.owner.patch(`${s.base}/products/${p.id}`, {})).status).toBe(400);
-    const cleared = await s.owner.patch<ProductDetail>(`${s.base}/products/${p.id}`, { pricePaise: null, brand: null });
+    const cleared = await s.owner.patch<ProductDetail>(`${s.base}/products/${p.id}`, {
+      pricePaise: null,
+      brand: null,
+    });
     expect(cleared.body.pricePaise).toBeNull();
   });
 
@@ -213,10 +251,14 @@ describe("listing and editing", () => {
     expect(r.status).toBe(200);
     expect(r.body.identifiers).toHaveLength(4);
     expect(r.body.shortCode).toBe(b.shortCode); // the short code survives
-    const clash = await s.owner.put(`${s.base}/products/${b.id}/identifiers`, { barcodes: ["6660000000001"] });
+    const clash = await s.owner.put(`${s.base}/products/${b.id}/identifiers`, {
+      barcodes: ["6660000000001"],
+    });
     expect(clash.body).toMatchObject({ code: "DUPLICATE_IDENTIFIER", existing_id: a.id });
     // keeping its own barcode is not a clash
-    expect((await s.owner.put(`${s.base}/products/${a.id}/identifiers`, { barcodes: ["6660000000001"] })).status).toBe(200);
+    expect(
+      (await s.owner.put(`${s.base}/products/${a.id}/identifiers`, { barcodes: ["6660000000001"] })).status,
+    ).toBe(200);
   });
 });
 
@@ -232,7 +274,11 @@ describe("showing products to shoppers", () => {
     expect(r.status, JSON.stringify(r.body)).toBe(200);
     expect(r.body.listings[0]).toMatchObject({ isPublished: true, showPrice: true });
     const row = await publicRow(s.branch.id, p.id);
-    expect(row).toMatchObject({ product_name: "Public hammer", product_name_hi: "हथौड़ा", price_paise: "25000" });
+    expect(row).toMatchObject({
+      product_name: "Public hammer",
+      product_name_hi: "हथौड़ा",
+      price_paise: "25000",
+    });
     expect(Object.keys(row).filter((k) => /qty|quantity|on_hand|cost|supplier/i.test(k))).toEqual([]);
 
     // hide the price: the public row stops carrying it
@@ -275,7 +321,9 @@ describe("showing products to shoppers", () => {
 
   it("needs a map pin and an active product", async () => {
     const s = await setup();
-    const noPin = (await s.owner.post<Branch>(`${s.base}/branches`, validBranch({ name: "No pin", location: undefined }))).body;
+    const noPin = (
+      await s.owner.post<Branch>(`${s.base}/branches`, validBranch({ name: "No pin", location: undefined }))
+    ).body;
     const p = await create(s);
     const r = await s.owner.put(`${s.base}/products/${p.id}/listings/${noPin.id}`, { isPublished: true });
     expect(r.status).toBe(422);
@@ -300,7 +348,9 @@ describe("who can do what", () => {
     expect((await keeper.post(`${s.base}/products`, hammer({ name: "From keeper" }))).status).toBe(201);
     expect((await keeper.patch(`${s.base}/products/${p.id}`, { name: "Keeper edit" })).status).toBe(200);
     expect((await show(s, p.id)).status).toBe(200);
-    const denied = await keeper.put(`${s.base}/products/${p.id}/listings/${s.branch.id}`, { isPublished: false });
+    const denied = await keeper.put(`${s.base}/products/${p.id}/listings/${s.branch.id}`, {
+      isPublished: false,
+    });
     expect(denied.status).toBe(403);
 
     // sales operator and auditor: read-only
@@ -312,12 +362,16 @@ describe("who can do what", () => {
       expect((await c.put(`${s.base}/products/${p.id}/identifiers`, {})).status).toBe(403);
     }
     // manager can publish at their branch
-    expect((await manager.put(`${s.base}/products/${p.id}/listings/${s.branch.id}`, { isPublished: false })).status).toBe(200);
+    expect(
+      (await manager.put(`${s.base}/products/${p.id}/listings/${s.branch.id}`, { isPublished: false }))
+        .status,
+    ).toBe(200);
   });
 
   it("a branch-limited manager cannot publish at another branch and sees only their branch", async () => {
     const s = await setup();
-    const other = (await s.owner.post<Branch>(`${s.base}/branches`, validBranch({ name: "Other shop" }))).body;
+    const other = (await s.owner.post<Branch>(`${s.base}/branches`, validBranch({ name: "Other shop" })))
+      .body;
     const p = await create(s);
     const mgr = await join(s, "branch_manager", [s.branch.id]);
     const r = await mgr.put(`${s.base}/products/${p.id}/listings/${other.id}`, { isPublished: false });
@@ -334,7 +388,10 @@ describe("who can do what", () => {
     const strangerRead = await b.owner.get(`${b.base}/products/${p.id}`);
     expect(strangerRead.status).toBe(404);
     expect((await b.owner.patch(`${b.base}/products/${p.id}`, { name: "Hijack" })).status).toBe(404);
-    expect((await b.owner.put(`${b.base}/products/${p.id}/listings/${b.branch.id}`, { isPublished: false })).status).toBe(404);
+    expect(
+      (await b.owner.put(`${b.base}/products/${p.id}/listings/${b.branch.id}`, { isPublished: false }))
+        .status,
+    ).toBe(404);
     expect((await b.owner.get<ProductPage>(`${b.base}/products`)).body.total).toBe(0);
     // and a stranger cannot even address the other shop
     expect((await b.owner.get(`${a.base}/products`)).status).toBe(404);

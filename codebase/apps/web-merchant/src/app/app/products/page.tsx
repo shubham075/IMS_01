@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Card, Pill } from "@/components/ui";
+import { cleanQuery } from "@/lib/form";
 import { formatRupees } from "@/lib/money";
 import { loadCategories, loadOrg, loadProducts, requireOrg } from "@/lib/server/dal";
 
@@ -16,8 +17,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const { membership } = await requireOrg();
   const status = sp.status === "inactive" || sp.status === "all" ? sp.status : "active";
-  const page = Math.max(1, Number(sp.page) || 1);
-  const q = sp.q?.trim().slice(0, 80) || undefined;
+  const page = Math.min(5000, Math.max(1, Math.floor(Number(sp.page)) || 1));
+  const q = cleanQuery(sp.q);
   const category = sp.category && /^[0-9a-f-]{36}$/i.test(sp.category) ? sp.category : undefined;
   const [org, categories, list, t, tu] = await Promise.all([
     loadOrg(membership.orgId),

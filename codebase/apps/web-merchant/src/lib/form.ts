@@ -37,3 +37,13 @@ export function localizedFieldErrors(
 }
 
 export const newKey = () => crypto.randomUUID();
+
+/** A search term taken from the address bar: control characters removed, trimmed, at most 80 characters. */
+export function cleanQuery(raw: string | undefined): string | undefined {
+  const q = (raw ?? "")
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping control characters is the point
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .trim()
+    .slice(0, 80);
+  return q || undefined;
+}

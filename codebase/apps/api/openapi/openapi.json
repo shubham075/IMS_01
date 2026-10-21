@@ -1398,6 +1398,554 @@
         ]
       }
     },
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock": {
+      "get": {
+        "operationId": "StockController_list",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "all",
+                "low",
+                "out",
+                "check"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 100000,
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockPageDto_Output"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (application/problem+json)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stock of every product at this branch",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/summary": {
+      "get": {
+        "operationId": "StockController_summary",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockSummaryDto_Output"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (application/problem+json)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "How many products are low, out, or need a check",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/movements": {
+      "post": {
+        "operationId": "StockController_record",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordMovementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovementResultDto_Output"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (application/problem+json)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record stock in, a sale, a return, an adjustment…",
+        "tags": [
+          "stock"
+        ]
+      },
+      "get": {
+        "operationId": "StockController_movements",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "reason",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 30,
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 100000,
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovementPageDto_Output"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (application/problem+json)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stock history",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/movements/{movementId}/reverse": {
+      "post": {
+        "operationId": "StockController_reverse",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "movementId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseMovementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovementResultDto_Output"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (application/problem+json)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Undo an entry (once) by adding the opposite entry",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/status": {
+      "put": {
+        "operationId": "StockController_setStatus",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockLineDto_Output"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (application/problem+json)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark an uncounted product in stock or out of stock",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/threshold": {
+      "put": {
+        "operationId": "StockController_setThreshold",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetThresholdDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockLineDto_Output"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (application/problem+json)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set the low-stock level for one product at this branch",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
     "/v1/merchant/orgs/{orgId}/members": {
       "get": {
         "operationId": "MembersController_list",
@@ -1856,6 +2404,9 @@
               "VERSION_CONFLICT",
               "DUPLICATE",
               "DUPLICATE_IDENTIFIER",
+              "CONFIRM_REQUIRED",
+              "ALREADY_REVERSED",
+              "OPENING_ALREADY_SET",
               "RESTRICTED_CATEGORY",
               "BRANCH_NOT_READY",
               "LAST_OWNER",
@@ -3769,6 +4320,658 @@
         },
         "required": [
           "isPublished"
+        ]
+      },
+      "StockPageDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nameHi": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "allowFraction": {
+                  "type": "boolean"
+                },
+                "trackingMode": {
+                  "type": "string",
+                  "enum": [
+                    "quantity",
+                    "status_only"
+                  ]
+                },
+                "code": {
+                  "description": "Barcode or quick code, for finding the product",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "onHand": {
+                  "type": "number"
+                },
+                "unsellable": {
+                  "type": "number"
+                },
+                "sellable": {
+                  "type": "number"
+                },
+                "threshold": {
+                  "type": "number",
+                  "description": "The level that counts as low for this branch"
+                },
+                "thresholdIsCustom": {
+                  "type": "boolean"
+                },
+                "isLow": {
+                  "type": "boolean"
+                },
+                "isOut": {
+                  "type": "boolean"
+                },
+                "needsCheck": {
+                  "type": "boolean",
+                  "description": "Stock went below zero: counts are probably out of step"
+                },
+                "statusOverride": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "in_stock",
+                        "out_of_stock"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "lastMovementAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "productId",
+                "name",
+                "nameHi",
+                "unit",
+                "allowFraction",
+                "trackingMode",
+                "code",
+                "onHand",
+                "unsellable",
+                "sellable",
+                "threshold",
+                "thresholdIsCustom",
+                "isLow",
+                "isOut",
+                "needsCheck",
+                "statusOverride",
+                "lastMovementAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "additionalProperties": false
+      },
+      "StockSummaryDto_Output": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "low": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "out": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "needsCheck": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "products",
+          "low",
+          "out",
+          "needsCheck"
+        ],
+        "additionalProperties": false
+      },
+      "RecordMovementDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "opening",
+              "receipt",
+              "sale",
+              "customer_return",
+              "supplier_return",
+              "adjustment",
+              "damage",
+              "expiry",
+              "loss",
+              "found"
+            ]
+          },
+          "quantity": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 10000000
+          },
+          "direction": {
+            "description": "Needed only for an adjustment",
+            "type": "string",
+            "enum": [
+              "in",
+              "out"
+            ]
+          },
+          "returnToUnsellable": {
+            "default": false,
+            "description": "Customer return that cannot be resold",
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "occurredAt": {
+            "description": "When it happened; defaults to now. At most 30 days back.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Made once per form; sending it again never counts twice"
+          },
+          "confirmLarge": {
+            "default": false,
+            "description": "Yes, this unusually large amount is correct",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "productId",
+          "kind",
+          "quantity",
+          "eventId"
+        ]
+      },
+      "MovementResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "movementId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "duplicate": {
+            "type": "boolean",
+            "description": "true when this eventId had already been recorded"
+          },
+          "line": {
+            "type": "object",
+            "properties": {
+              "productId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "name": {
+                "type": "string"
+              },
+              "nameHi": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "unit": {
+                "type": "string"
+              },
+              "allowFraction": {
+                "type": "boolean"
+              },
+              "trackingMode": {
+                "type": "string",
+                "enum": [
+                  "quantity",
+                  "status_only"
+                ]
+              },
+              "code": {
+                "description": "Barcode or quick code, for finding the product",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "onHand": {
+                "type": "number"
+              },
+              "unsellable": {
+                "type": "number"
+              },
+              "sellable": {
+                "type": "number"
+              },
+              "threshold": {
+                "type": "number",
+                "description": "The level that counts as low for this branch"
+              },
+              "thresholdIsCustom": {
+                "type": "boolean"
+              },
+              "isLow": {
+                "type": "boolean"
+              },
+              "isOut": {
+                "type": "boolean"
+              },
+              "needsCheck": {
+                "type": "boolean",
+                "description": "Stock went below zero: counts are probably out of step"
+              },
+              "statusOverride": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "in_stock",
+                      "out_of_stock"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastMovementAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "productId",
+              "name",
+              "nameHi",
+              "unit",
+              "allowFraction",
+              "trackingMode",
+              "code",
+              "onHand",
+              "unsellable",
+              "sellable",
+              "threshold",
+              "thresholdIsCustom",
+              "isLow",
+              "isOut",
+              "needsCheck",
+              "statusOverride",
+              "lastMovementAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "movementId",
+          "duplicate",
+          "line"
+        ],
+        "additionalProperties": false
+      },
+      "MovementPageDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "productId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "productName": {
+                  "type": "string"
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "qtyDelta": {
+                  "type": "number"
+                },
+                "bucket": {
+                  "type": "string",
+                  "enum": [
+                    "on_hand",
+                    "unsellable"
+                  ]
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "type": "string"
+                },
+                "actorName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "isReversal": {
+                  "type": "boolean"
+                },
+                "isReversed": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "productId",
+                "productName",
+                "occurredAt",
+                "reason",
+                "qtyDelta",
+                "bucket",
+                "note",
+                "source",
+                "actorName",
+                "isReversal",
+                "isReversed"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "additionalProperties": false
+      },
+      "ReverseMovementDto": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "eventId"
+        ]
+      },
+      "SetStatusDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "in_stock",
+              "out_of_stock"
+            ]
+          }
+        },
+        "required": [
+          "productId",
+          "status"
+        ]
+      },
+      "StockLineDto_Output": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nameHi": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "allowFraction": {
+            "type": "boolean"
+          },
+          "trackingMode": {
+            "type": "string",
+            "enum": [
+              "quantity",
+              "status_only"
+            ]
+          },
+          "code": {
+            "description": "Barcode or quick code, for finding the product",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "onHand": {
+            "type": "number"
+          },
+          "unsellable": {
+            "type": "number"
+          },
+          "sellable": {
+            "type": "number"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "The level that counts as low for this branch"
+          },
+          "thresholdIsCustom": {
+            "type": "boolean"
+          },
+          "isLow": {
+            "type": "boolean"
+          },
+          "isOut": {
+            "type": "boolean"
+          },
+          "needsCheck": {
+            "type": "boolean",
+            "description": "Stock went below zero: counts are probably out of step"
+          },
+          "statusOverride": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "in_stock",
+                  "out_of_stock"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastMovementAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "productId",
+          "name",
+          "nameHi",
+          "unit",
+          "allowFraction",
+          "trackingMode",
+          "code",
+          "onHand",
+          "unsellable",
+          "sellable",
+          "threshold",
+          "thresholdIsCustom",
+          "isLow",
+          "isOut",
+          "needsCheck",
+          "statusOverride",
+          "lastMovementAt"
+        ],
+        "additionalProperties": false
+      },
+      "SetThresholdDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null = use the product's level"
+          }
+        },
+        "required": [
+          "productId",
+          "threshold"
         ]
       },
       "MemberDto_Output": {

@@ -29,6 +29,15 @@ const RULES: Array<[RegExp, string, ((m: RegExpExecArray) => string)?]> = [
   [/^Choose a category from the list\.$/, "chooseCategory"],
   [/^Turn the product on before showing it to shoppers\.$/, "productOff"],
   [/^Type something to search\.$/, "searchEmpty"],
+  [/^Quantity must be more than zero\.$/, "quantityPositive"],
+  [/^Quantity is too large\.$/, "quantityLarge"],
+  [/^Use at most 3 decimal places\.$/, "quantityDecimals"],
+  [/^Choose whether stock went up or down\.$/, "chooseDirection"],
+  [/^Say why you are adjusting the stock\.$/, "whyRequired"],
+  [/^Remove unusual characters\.$/, "unusualChars"],
+  [/^The unit cannot change after stock has been recorded\.$/, "unitLocked"],
+  [/^This product is not counted\. Mark it in stock or out of stock instead\.$/, "notCounted"],
+  [/^This product is counted\. Record stock in or out instead\.$/, "counted"],
   [/^Invalid input.*$/, "required"],
 ];
 

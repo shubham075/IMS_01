@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Banner, Card, Pill } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { loadBranches, loadOrg, loadProducts, requireOrg } from "@/lib/server/dal";
+import { loadBranches, loadOrg, loadProducts, loadStockSummary, requireOrg } from "@/lib/server/dal";
 
 export async function generateMetadata() {
   const t = await getTranslations("console.nav");
@@ -18,6 +18,9 @@ export default async function Dashboard() {
     getTranslations("dashboard"),
   ]);
   const published = products.items.some((p) => p.publishedBranchCount > 0);
+  const stockBranch = branches[0];
+  const stock =
+    stockBranch && products.total > 0 ? await loadStockSummary(membership.orgId, stockBranch.id) : null;
   const located = branches.some((b) => b.location && b.hoursVerified);
   const items: Array<{ done: boolean; label: string; href?: string }> = [
     { done: true, label: t("shopDone") },
@@ -95,6 +98,29 @@ export default async function Dashboard() {
       </section>
 
       <aside className="space-y-4">
+        {stock && stockBranch && (
+          <Card className="p-4 sm:p-5">
+            <p className="text-sm font-semibold text-ink/75">
+              {t("stockTitle")}
+              {branches.length > 1 ? ` · ${stockBranch.name}` : ""}
+            </p>
+            {stock.low + stock.out + stock.needsCheck === 0 ? (
+              <p className="mt-1 font-bold">{t("stockOk")}</p>
+            ) : (
+              <ul className="mt-2 space-y-1 font-bold">
+                {stock.needsCheck > 0 && <li>{t("stockCheck", { n: stock.needsCheck })}</li>}
+                {stock.out > 0 && <li>{t("stockOut", { n: stock.out })}</li>}
+                {stock.low > 0 && <li>{t("stockLow", { n: stock.low })}</li>}
+              </ul>
+            )}
+            <Link
+              href={`/app/stock${stock.needsCheck + stock.out + stock.low > 0 ? "?filter=" + (stock.needsCheck ? "check" : stock.out ? "out" : "low") : ""}`}
+              className="mt-3 inline-block font-bold underline"
+            >
+              {t("stockOpen")}
+            </Link>
+          </Card>
+        )}
         <Card className="p-4 sm:p-5">
           <p className="text-sm font-semibold text-ink/75">{t("plan")}</p>
           <p className="mt-1 text-2xl font-extrabold">{t("planFree")}</p>

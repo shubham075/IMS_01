@@ -63,3 +63,29 @@ Deviations / gaps to remember:
 - Offset pagination (fine at R1 sizes); switch to keyset if a shop passes ~10k products.
 - Attributes (FR-CAT-04) accepted and stored but no category schemas or UI yet; unit conversions (FR-CAT-06) have no UI yet (needed in 2b when quantities move).
 - Price-hide-after-14-days (D-10) is applied by the projection, not shown in the merchant UI.
+
+## Status of 2b (built 2026-10-21)
+Done: stock list per branch (low / out / needs-check filters, search), record opening / receipt / sale / returns / damage / expiry / loss / found / correction, status-only products (in/out), per-branch low-stock level, history with who/when/why, undo-once, dashboard stock card. API `/merchant/orgs/:orgId/branches/:branchId/stock…`; EN/HI.
+Rules as built: sales and customer returns need `sale.record`, everything else `stock.write`; negative stock allowed and flagged (D-01); opening stock once per product and branch; more than 10× typical quantity needs confirmation; dates may not be in the future or more than 30 days back; unit locked once stock exists; a product that was never stocked is "not counted yet", not "out".
+Not in 2b: backdating beyond 30 days with an admin reason, unit conversions, stock counts (FR-INV-12) and transfers (2c).
+
+## "How would real users break this?" — attack suite (`apps/api/test/abuse.test.ts`, `apps/web-merchant/e2e/stock.spec.ts`)
+| # | Attack / mistake | Result |
+|---|---|---|
+| 1 | Double tap, ten parallel submits of one form | one entry (idempotent) |
+| 2 | 25 simultaneous sales | no lost or invented stock; balances match the ledger |
+| 3 | Five tabs undo the same sale | undone once, others 409 |
+| 4 | Two people set opening stock at once | **bug found:** both succeeded → fixed with a per-product lock |
+| 5 | Two people add the same barcode at once | **bug found:** 500 → now 409 with link to the product |
+| 6 | Retry after dropped connection with a *changed* amount, or event id re-used for another product/branch | **bug found:** silently ignored → now 409 `IDEMPOTENCY_KEY_REUSED`; a true retry of opening stock now returns the original result |
+| 7 | NUL bytes, huge numbers, 10k-character text, nested JSON | **bug found:** 500 on control characters → 400 |
+| 8 | SQL / wildcard / emoji search | treated as text; `%` is not a wildcard |
+| 9 | Broken IDs, limits, offsets, page=99999, NUL in address bar | **bug found:** 500 on huge page / NUL → clamped and sanitised |
+| 10 | Other shop's IDs in every position; extra body fields (`org_id`, `status: merged`) | 404 / ignored / 400 |
+| 11 | Role escalation through the body | ignored; 403 |
+| 12 | Change unit under existing stock | **bug found:** allowed → now rejected |
+| 13 | Removed colleague with an old session; garbage tokens | no access |
+| 14 | Script script-tags in names and notes | shown as text, nothing runs |
+| 15 | 320 requests in a minute | 429 with Retry-After |
+| 16 | A "not counted" product nobody had marked | **bug found (by the browser test):** list returned 500 (NULL boolean) → fixed |
+Not covered yet: multi-instance rate limiting (in-memory), clock-skewed devices (offline sync slice), very large catalogues (load test), screen-reader testing by a person.

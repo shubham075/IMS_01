@@ -29,10 +29,13 @@ export async function addBranch(page: Page) {
   await page.getByLabel("City").fill("Bengaluru");
   await page.getByLabel("State").fill("Karnataka");
   await page.getByLabel("PIN code").fill("560011");
-  await page
-    .getByRole("application", { name: "Pin your shop on the map" })
-    .click({ position: { x: 120, y: 100 } });
-  await expect(page.getByText("Pin placed ✓")).toBeVisible();
+  // The map may still be loading: click again until the pin lands.
+  await expect(async () => {
+    await page
+      .getByRole("application", { name: "Pin your shop on the map" })
+      .click({ position: { x: 120, y: 100 } });
+    await expect(page.getByText("Pin placed ✓")).toBeVisible({ timeout: 1500 });
+  }).toPass({ timeout: 15_000 });
   await page.getByRole("button", { name: /Save and continue/ }).click();
   await expect(page).toHaveURL(/\/app$/);
 }
