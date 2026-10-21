@@ -17,6 +17,7 @@ import { MeModule } from "./me/me.module";
 import { MembersModule } from "./members/members.module";
 import { OrgsModule } from "./orgs/orgs.module";
 import { StockModule } from "./stock/stock.module";
+import { TransfersModule } from "./transfers/transfers.module";
 
 export function createAppModule(testEnv?: Record<string, string>) {
   @Module({
@@ -54,6 +55,7 @@ export function createAppModule(testEnv?: Record<string, string>) {
       BranchesModule,
       CatalogueModule,
       StockModule,
+      TransfersModule,
       MembersModule,
     ],
     controllers: [HealthController],

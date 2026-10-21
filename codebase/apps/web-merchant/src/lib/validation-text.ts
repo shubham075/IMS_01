@@ -38,6 +38,12 @@ const RULES: Array<[RegExp, string, ((m: RegExpExecArray) => string)?]> = [
   [/^The unit cannot change after stock has been recorded\.$/, "unitLocked"],
   [/^This product is not counted\. Mark it in stock or out of stock instead\.$/, "notCounted"],
   [/^This product is counted\. Record stock in or out instead\.$/, "counted"],
+  [/^Add at least one product\.$/, "addProducts"],
+  [/^Choose two different branches\.$/, "differentBranches"],
+  [/^A transfer can have at most 100 products\.$/, "tooManyLines"],
+  [/^Each product can appear only once\.$/, "oncePerProduct"],
+  [/^This product is not counted, so it cannot be transferred\.$/, "notCountedTransfer"],
+  [/^Place the pin inside India\.$/, "pinOutsideIndia"],
   [/^Invalid input.*$/, "required"],
 ];
 

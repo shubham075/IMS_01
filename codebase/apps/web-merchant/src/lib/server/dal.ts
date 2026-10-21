@@ -13,6 +13,8 @@ import type {
   ProductPage,
   StockPage,
   StockSummary,
+  TransferDetail,
+  TransferPage,
 } from "@idea01/schemas";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -138,5 +140,24 @@ export async function loadMovements(
     api.GET("/v1/merchant/orgs/{orgId}/branches/{branchId}/stock/movements", {
       params: { path: { orgId, branchId }, query },
     }),
+  );
+}
+
+export async function loadTransfers(
+  orgId: string,
+  query: { status?: string; limit?: number; offset?: number },
+): Promise<TransferPage> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/transfers", {
+      params: { path: { orgId }, query: query as Record<string, string | number | undefined> },
+    }),
+  );
+}
+
+export async function loadTransfer(orgId: string, transferId: string): Promise<TransferDetail> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/transfers/{transferId}", { params: { path: { orgId, transferId } } }),
   );
 }

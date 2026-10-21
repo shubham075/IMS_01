@@ -29,8 +29,8 @@ export const hoursSchema = z
 export type Hours = z.infer<typeof hoursSchema>;
 
 export const locationSchema = z.object({
-  lat: z.number().min(6).max(37.5).describe("Latitude (India bounds)"),
-  lng: z.number().min(68).max(98).describe("Longitude (India bounds)"),
+  lat: z.number().min(6, "Place the pin inside India.").max(37.5, "Place the pin inside India.").describe("Latitude (India bounds)"),
+  lng: z.number().min(68, "Place the pin inside India.").max(98, "Place the pin inside India.").describe("Longitude (India bounds)"),
 });
 export type Location = z.infer<typeof locationSchema>;
 

@@ -57,7 +57,12 @@ export function BranchForm({ orgId, tileUrl, branch, nextPath }: Props) {
     if (!parsed.success) {
       const errs = localizedErrors(t, parsed.error);
       const hoursMsg = Object.entries(errs).find(([k]) => k.startsWith("hours"))?.[1];
-      return setErrors({ ...errs, ...(hoursMsg ? { hours: hoursMsg } : {}) });
+      const locMsg = errs["location.lat"] ?? errs["location.lng"];
+      return setErrors({
+        ...errs,
+        ...(hoursMsg ? { hours: hoursMsg } : {}),
+        ...(locMsg ? { location: locMsg } : {}),
+      });
     }
     setErrors({});
     start(async () => {

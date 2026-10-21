@@ -7,10 +7,12 @@ import {
   createInvitationSchema,
   createOrgSchema,
   createProductSchema,
+  createTransferSchema,
   invitationSchema,
   listMovementsQuerySchema,
   listProductsQuerySchema,
   listStockQuerySchema,
+  listTransfersQuerySchema,
   logoutRequestSchema,
   memberSchema,
   membershipSummarySchema,
@@ -24,6 +26,7 @@ import {
   problemSchema,
   productDetailSchema,
   productPageSchema,
+  receiveTransferSchema,
   recordMovementSchema,
   refreshRequestSchema,
   reverseMovementSchema,
@@ -33,10 +36,13 @@ import {
   setPublicationSchema,
   setStatusSchema,
   setThresholdSchema,
+  setTransferLinesSchema,
   stockLineSchema,
   stockPageSchema,
   stockSummarySchema,
   tokenResponseSchema,
+  transferDetailSchema,
+  transferPageSchema,
   updateBranchSchema,
   updateMemberSchema,
   updateOrgSchema,
@@ -98,6 +104,13 @@ export class MovementPageDto extends createZodDto(movementPageSchema) {}
 export class MovementResultDto extends createZodDto(movementResultSchema) {}
 
 export class SetPublicationDto extends createZodDto(setPublicationSchema) {}
+
+export class CreateTransferDto extends createZodDto(createTransferSchema) {}
+export class SetTransferLinesDto extends createZodDto(setTransferLinesSchema) {}
+export class ReceiveTransferDto extends createZodDto(receiveTransferSchema) {}
+export class ListTransfersQueryDto extends createZodDto(listTransfersQuerySchema) {}
+export class TransferDetailDto extends createZodDto(transferDetailSchema) {}
+export class TransferPageDto extends createZodDto(transferPageSchema) {}
 
 export class ProblemDto extends createZodDto(problemSchema) {}
 

@@ -488,6 +488,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orgs/{orgId}/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Transfers between your branches */
+        get: operations["TransfersController_list"];
+        put?: never;
+        /** Start a transfer (draft) */
+        post: operations["TransfersController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/transfers/{transferId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One transfer with its products */
+        get: operations["TransfersController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/transfers/{transferId}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace the products of a draft transfer */
+        put: operations["TransfersController_setLines"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/transfers/{transferId}/dispatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send the transfer: stock leaves the sending branch */
+        post: operations["TransfersController_dispatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/transfers/{transferId}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm what arrived at the receiving branch */
+        post: operations["TransfersController_receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/transfers/{transferId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel a draft transfer */
+        post: operations["TransfersController_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orgs/{orgId}/members": {
         parameters: {
             query?: never;
@@ -1148,6 +1251,85 @@ export interface components {
             productId: string;
             /** @description null = use the product's level */
             threshold: number | null;
+        };
+        TransferPageDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                fromBranchId: string;
+                fromBranchName: string;
+                /** Format: uuid */
+                toBranchId: string;
+                toBranchName: string;
+                /** @enum {string} */
+                status: "draft" | "dispatched" | "received" | "cancelled";
+                lineCount: number;
+                /** Format: date-time */
+                createdAt: string;
+                dispatchedAt: string | null;
+                receivedAt: string | null;
+            }[];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        CreateTransferDto: {
+            /** Format: uuid */
+            fromBranchId: string;
+            /** Format: uuid */
+            toBranchId: string;
+            note?: string;
+            lines: {
+                /** Format: uuid */
+                productId: string;
+                quantity: number;
+            }[];
+        };
+        TransferDetailDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            fromBranchId: string;
+            fromBranchName: string;
+            /** Format: uuid */
+            toBranchId: string;
+            toBranchName: string;
+            /** @enum {string} */
+            status: "draft" | "dispatched" | "received" | "cancelled";
+            lineCount: number;
+            /** Format: date-time */
+            createdAt: string;
+            dispatchedAt: string | null;
+            receivedAt: string | null;
+            note: string | null;
+            createdByName: string | null;
+            lines: {
+                /** Format: uuid */
+                productId: string;
+                name: string;
+                unit: string;
+                allowFraction: boolean;
+                qtySent: number;
+                qtyReceived: number | null;
+                /** @description What the sending branch has now */
+                sourceOnHand: number;
+            }[];
+        };
+        SetTransferLinesDto: {
+            lines: {
+                /** Format: uuid */
+                productId: string;
+                quantity: number;
+            }[];
+        };
+        ReceiveTransferDto: {
+            /** @default [] */
+            received: {
+                /** Format: uuid */
+                productId: string;
+                quantity: number;
+            }[];
         };
         MemberDto_Output: {
             /** Format: uuid */
@@ -2322,6 +2504,238 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StockLineDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    TransfersController_list: {
+        parameters: {
+            query?: {
+                status?: "draft" | "dispatched" | "received" | "cancelled";
+                branchId?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferPageDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    TransfersController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTransferDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    TransfersController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transferId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    TransfersController_setLines: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transferId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetTransferLinesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    TransfersController_dispatch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transferId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    TransfersController_receive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transferId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiveTransferDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    TransfersController_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transferId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDetailDto_Output"];
                 };
             };
             /** @description Error (application/problem+json) */

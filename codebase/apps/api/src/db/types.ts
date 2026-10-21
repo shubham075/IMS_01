@@ -601,6 +601,7 @@ export interface StockTransfer {
   dispatched_at: Timestamp | null;
   from_branch: string;
   id: Generated<string>;
+  note: string | null;
   org_id: string;
   received_at: Timestamp | null;
   status: Generated<string>;

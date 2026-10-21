@@ -4,11 +4,15 @@ import { NavLink } from "@/components/nav-link";
 import { OrgSwitcher } from "@/components/org-switcher";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Banner, Logo, Pill } from "@/components/ui";
-import { loadOrg, requireOrg } from "@/lib/server/dal";
+import { loadBranches, loadOrg, requireOrg } from "@/lib/server/dal";
 
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
   const { me, membership } = await requireOrg();
-  const [org, t] = await Promise.all([loadOrg(membership.orgId), getTranslations()]);
+  const [org, branches, t] = await Promise.all([
+    loadOrg(membership.orgId),
+    loadBranches(membership.orgId),
+    getTranslations(),
+  ]);
   const canManageTeam = org.permissions.includes("staff.manage");
 
   return (
@@ -34,6 +38,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         </NavLink>
         <NavLink href="/app/products">{t("console.nav.products")}</NavLink>
         <NavLink href="/app/stock">{t("console.nav.stock")}</NavLink>
+        {branches.length >= 2 && <NavLink href="/app/transfers">{t("console.nav.transfers")}</NavLink>}
         <NavLink href="/app/branches">{t("console.nav.branches")}</NavLink>
         {canManageTeam && <NavLink href="/app/team">{t("console.nav.team")}</NavLink>}
       </nav>

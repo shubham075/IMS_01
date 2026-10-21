@@ -81,6 +81,24 @@ test.describe("going live", () => {
   });
 });
 
+test.describe("map pin", () => {
+  test("a pin placed outside India is refused with a clear message", async ({ page }) => {
+    await shopWithBranch(page);
+    await page.goto("/app/branches/new");
+    await page.getByLabel("Branch name").fill("Far branch");
+    await page.getByLabel("Address").fill("1, Some Road");
+    await page.getByLabel("PIN code").fill("560038");
+    await expect(async () => {
+      await page
+        .getByRole("application", { name: "Pin your shop on the map" })
+        .click({ position: { x: 150, y: 120 } });
+      await expect(page.getByText("Pin placed ✓")).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 15_000 });
+    await page.getByRole("button", { name: /Save and continue/ }).click();
+    await expect(page.getByText("Place the pin inside India.")).toBeVisible();
+  });
+});
+
 test.describe("going live on a phone @phone", () => {
   test("the branch card fits a small screen", async ({ page }) => {
     await shopWithBranch(page);
