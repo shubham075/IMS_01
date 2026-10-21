@@ -178,13 +178,11 @@ test.describe("import", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "hi");
     await page.goto("/app/import");
     await expect(page.getByRole("heading", { name: "प्रोडक्ट इम्पोर्ट करें", level: 1 })).toBeVisible();
-    await page
-      .getByLabel("CSV फ़ाइल")
-      .setInputFiles({
-        name: "a.csv",
-        mimeType: "text/csv",
-        buffer: Buffer.from("name,category\nBrush,Hardware\nBad,Gadgets"),
-      });
+    await page.getByLabel("CSV फ़ाइल").setInputFiles({
+      name: "a.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("name,category\nBrush,Hardware\nBad,Gadgets"),
+    });
     await page.getByRole("button", { name: "फ़ाइल जाँचें" }).click();
     await expect(page.getByText("1 तैयार")).toBeVisible();
     await expect(page.getByText(/कैटेगरी “Gadgets” हम नहीं जानते/)).toBeVisible();

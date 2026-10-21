@@ -17,6 +17,7 @@ import { ImportsModule } from "./imports/imports.module";
 import { MeModule } from "./me/me.module";
 import { MembersModule } from "./members/members.module";
 import { OrgsModule } from "./orgs/orgs.module";
+import { ScanModule } from "./scan/scan.module";
 import { StockModule } from "./stock/stock.module";
 import { TransfersModule } from "./transfers/transfers.module";
 
@@ -58,6 +59,7 @@ export function createAppModule(testEnv?: Record<string, string>) {
       StockModule,
       TransfersModule,
       ImportsModule,
+      ScanModule,
       MembersModule,
     ],
     controllers: [HealthController],

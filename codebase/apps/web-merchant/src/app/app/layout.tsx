@@ -38,6 +38,10 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         </NavLink>
         <NavLink href="/app/products">{t("console.nav.products")}</NavLink>
         <NavLink href="/app/stock">{t("console.nav.stock")}</NavLink>
+        <NavLink href="/app/scan">{t("console.nav.scan")}</NavLink>
+        {org.permissions.includes("count.run") && (
+          <NavLink href="/app/counts">{t("console.nav.counts")}</NavLink>
+        )}
         {branches.length >= 2 && <NavLink href="/app/transfers">{t("console.nav.transfers")}</NavLink>}
         <NavLink href="/app/branches">{t("console.nav.branches")}</NavLink>
         {org.permissions.includes("import.run") && (

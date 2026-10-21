@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { CataloguePicker } from "@/components/catalogue-picker";
 import { ProductForm } from "@/components/product-form";
 import { cn } from "@/lib/cn";
+import { cleanQuery } from "@/lib/form";
 import { loadCategories, loadOrg, requireOrg } from "@/lib/server/dal";
 
 export async function generateMetadata() {
@@ -11,8 +12,12 @@ export async function generateMetadata() {
   return { title: t("add") };
 }
 
-export default async function AddProductPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const { tab } = await searchParams;
+export default async function AddProductPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string; barcode?: string }>;
+}) {
+  const { tab, barcode } = await searchParams;
   const { membership } = await requireOrg();
   const org = await loadOrg(membership.orgId);
   if (!org.permissions.includes("catalogue.write") || org.status !== "active") redirect("/app/products");
@@ -41,7 +46,11 @@ export default async function AddProductPage({ searchParams }: { searchParams: P
       </div>
       <div className="mt-5">
         {custom ? (
-          <ProductForm orgId={membership.orgId} categories={categories} />
+          <ProductForm
+            orgId={membership.orgId}
+            categories={categories}
+            initialBarcode={cleanQuery(barcode)}
+          />
         ) : (
           <CataloguePicker orgId={membership.orgId} categories={categories} />
         )}

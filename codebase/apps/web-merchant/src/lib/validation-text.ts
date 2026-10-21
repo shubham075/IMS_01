@@ -44,6 +44,9 @@ const RULES: Array<[RegExp, string, ((m: RegExpExecArray) => string)?]> = [
   [/^Each product can appear only once\.$/, "oncePerProduct"],
   [/^This product is not counted, so it cannot be transferred\.$/, "notCountedTransfer"],
   [/^Place the pin inside India\.$/, "pinOutsideIndia"],
+  [/^Type or scan a code\.$/, "scanCode"],
+  [/^That code is too long\.$/, "scanCodeLong"],
+  [/^That code has characters we do not recognise\.$/, "scanCodeChars"],
   [/^Invalid input.*$/, "required"],
 ];
 

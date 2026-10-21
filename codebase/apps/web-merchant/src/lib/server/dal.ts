@@ -3,6 +3,8 @@ import { ApiError, unwrap } from "@idea01/api-client";
 import type {
   Branch,
   Category,
+  CountDetail,
+  CountPage,
   ImportJob,
   ImportPage,
   ImportRowPage,
@@ -189,6 +191,28 @@ export async function loadImportRows(
   return unwrap(
     api.GET("/v1/merchant/orgs/{orgId}/imports/{importId}/rows", {
       params: { path: { orgId, importId }, query: query as Record<string, string | number | undefined> },
+    }),
+  );
+}
+
+export async function loadCounts(
+  orgId: string,
+  branchId: string,
+  query: { status?: string; limit?: number },
+): Promise<CountPage> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/branches/{branchId}/counts", {
+      params: { path: { orgId, branchId }, query: query as Record<string, string | number | undefined> },
+    }),
+  );
+}
+
+export async function loadCount(orgId: string, branchId: string, countId: string): Promise<CountDetail> {
+  const api = await authedApi();
+  return unwrap(
+    api.GET("/v1/merchant/orgs/{orgId}/branches/{branchId}/counts/{countId}", {
+      params: { path: { orgId, branchId, countId } },
     }),
   );
 }

@@ -462,7 +462,7 @@ export class StockService {
     return res.rows as LineRow[];
   }
 
-  private async lineFor(trx: Trx, orgId: string, branchId: string, productId: string): Promise<StockLine> {
+  async lineFor(trx: Trx, orgId: string, branchId: string, productId: string): Promise<StockLine> {
     const [row] = await this.lines(trx, orgId, branchId, { productId, limit: 1 });
     if (!row) throw Errors.notFound("Product");
     return mapLine(row);

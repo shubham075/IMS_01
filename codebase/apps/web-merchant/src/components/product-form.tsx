@@ -22,9 +22,11 @@ interface Props {
   categories: Category[];
   /** Present when editing. */
   product?: ProductDetail;
+  /** A scanned barcode to start the form with. */
+  initialBarcode?: string;
 }
 
-export function ProductForm({ orgId, categories, product }: Props) {
+export function ProductForm({ orgId, categories, product, initialBarcode }: Props) {
   const t = useTranslations();
   const router = useRouter();
   const lang = useLocale();
@@ -224,7 +226,13 @@ export function ProductForm({ orgId, categories, product }: Props) {
               hint={t("productForm.barcodeHelp")}
               error={errors.barcode}
             >
-              <Input id="barcode" name="barcode" inputMode="numeric" aria-invalid={!!errors.barcode} />
+              <Input
+                id="barcode"
+                name="barcode"
+                inputMode="numeric"
+                defaultValue={initialBarcode}
+                aria-invalid={!!errors.barcode}
+              />
             </Field>
             <Field
               label={t("productForm.sku")}

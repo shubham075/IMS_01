@@ -3,6 +3,9 @@ import {
   branchSchema,
   canonicalProductSchema,
   categorySchema,
+  countDetailSchema,
+  countLineInputSchema,
+  countPageSchema,
   createBranchSchema,
   createInvitationSchema,
   createOrgSchema,
@@ -13,6 +16,7 @@ import {
   importPreviewSchema,
   importRowPageSchema,
   invitationSchema,
+  listCountsQuerySchema,
   listImportRowsQuerySchema,
   listImportsQuerySchema,
   listMovementsQuerySchema,
@@ -20,6 +24,8 @@ import {
   listStockQuerySchema,
   listTransfersQuerySchema,
   logoutRequestSchema,
+  lookupQuerySchema,
+  lookupResultSchema,
   memberSchema,
   membershipSummarySchema,
   meResponseSchema,
@@ -44,6 +50,7 @@ import {
   setStatusSchema,
   setThresholdSchema,
   setTransferLinesSchema,
+  startCountSchema,
   stockLineSchema,
   stockPageSchema,
   stockSummarySchema,
@@ -126,6 +133,14 @@ export class ImportRowPageDto extends createZodDto(importRowPageSchema) {}
 export class ImportPageDto extends createZodDto(importPageSchema) {}
 export class ListImportRowsQueryDto extends createZodDto(listImportRowsQuerySchema) {}
 export class ListImportsQueryDto extends createZodDto(listImportsQuerySchema) {}
+
+export class LookupQueryDto extends createZodDto(lookupQuerySchema) {}
+export class LookupResultDto extends createZodDto(lookupResultSchema) {}
+export class StartCountDto extends createZodDto(startCountSchema) {}
+export class CountLineInputDto extends createZodDto(countLineInputSchema) {}
+export class CountDetailDto extends createZodDto(countDetailSchema) {}
+export class CountPageDto extends createZodDto(countPageSchema) {}
+export class ListCountsQueryDto extends createZodDto(listCountsQuerySchema) {}
 
 export class ProblemDto extends createZodDto(problemSchema) {}
 

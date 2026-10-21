@@ -693,6 +693,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orgs/{orgId}/catalogue/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Find a product by barcode, product code or quick code */
+        get: operations["ScanController_lookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock counts at a branch */
+        get: operations["ScanController_list"];
+        put?: never;
+        /** Start a stock count, or continue the one in progress */
+        post: operations["ScanController_start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/counts/{countId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One stock count with what was counted and what will change */
+        get: operations["ScanController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/counts/{countId}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record the number counted for a product */
+        post: operations["ScanController_addLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/counts/{countId}/finalize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish the count: stock is corrected to what was counted */
+        post: operations["ScanController_finalize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orgs/{orgId}/branches/{branchId}/counts/{countId}/abandon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel a count without changing any stock */
+        post: operations["ScanController_abandon"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orgs/{orgId}/members": {
         parameters: {
             query?: never;
@@ -1555,6 +1658,126 @@ export interface components {
             total: number;
             limit: number;
             offset: number;
+        };
+        LookupResultDto_Output: {
+            /** @description Your product with this code, if any */
+            product: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameHi: string | null;
+                unit: string;
+                allowFraction: boolean;
+                /** @enum {string} */
+                trackingMode: "quantity" | "status_only";
+                /** @enum {string} */
+                status: "active" | "inactive" | "merged";
+                pricePaise: number | null;
+            } | null;
+            /** @description A shared-catalogue match when you have no product with this code */
+            canonical: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                brand: string | null;
+                barcode: string | null;
+                categoryId: string | null;
+                alreadyAddedProductId: string | null;
+            } | null;
+            /** @description Stock at the branch asked for */
+            stock: {
+                /** Format: uuid */
+                productId: string;
+                name: string;
+                nameHi: string | null;
+                unit: string;
+                allowFraction: boolean;
+                /** @enum {string} */
+                trackingMode: "quantity" | "status_only";
+                /** @description Barcode or quick code, for finding the product */
+                code: string | null;
+                onHand: number;
+                unsellable: number;
+                sellable: number;
+                /** @description The level that counts as low for this branch */
+                threshold: number;
+                thresholdIsCustom: boolean;
+                isLow: boolean;
+                isOut: boolean;
+                /** @description Stock went below zero: counts are probably out of step */
+                needsCheck: boolean;
+                statusOverride: ("in_stock" | "out_of_stock") | null;
+                lastMovementAt: string | null;
+            } | null;
+        };
+        CountPageDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                branchId: string;
+                branchName: string;
+                /** @enum {string} */
+                kind: "cycle" | "full";
+                /** @enum {string} */
+                status: "draft" | "finalized" | "abandoned";
+                /** Format: date-time */
+                startedAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+                finalizedAt: string | null;
+                startedByName: string | null;
+                lineCount: number;
+            }[];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        StartCountDto: {
+            /**
+             * @default cycle
+             * @enum {string}
+             */
+            kind: "cycle" | "full";
+        };
+        CountDetailDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            branchId: string;
+            branchName: string;
+            /** @enum {string} */
+            kind: "cycle" | "full";
+            /** @enum {string} */
+            status: "draft" | "finalized" | "abandoned";
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            finalizedAt: string | null;
+            startedByName: string | null;
+            lineCount: number;
+            lines: {
+                /** Format: uuid */
+                productId: string;
+                name: string;
+                unit: string;
+                allowFraction: boolean;
+                counted: number;
+                /** Format: date-time */
+                countedAt: string;
+                /** @description What the records say there was at the moment of counting */
+                expected: number;
+                /** @description counted minus expected: what finishing the count will correct */
+                difference: number;
+            }[];
+            /** @description Products whose stock will change when the count is finished */
+            corrections: number;
+        };
+        CountLineInputDto: {
+            /** Format: uuid */
+            productId: string;
+            quantity: number;
         };
         MemberDto_Output: {
             /** Format: uuid */
@@ -3156,6 +3379,242 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportJobDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ScanController_lookup: {
+        parameters: {
+            query: {
+                code: string;
+                /** @description Include this branch's stock for the product */
+                branchId?: string;
+            };
+            header?: never;
+            path: {
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LookupResultDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ScanController_list: {
+        parameters: {
+            query?: {
+                status?: "draft" | "finalized" | "abandoned";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountPageDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ScanController_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartCountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ScanController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                countId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ScanController_addLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                countId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CountLineInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ScanController_finalize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                countId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDetailDto_Output"];
+                };
+            };
+            /** @description Error (application/problem+json) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDto"];
+                };
+            };
+        };
+    };
+    ScanController_abandon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                countId: string;
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDetailDto_Output"];
                 };
             };
             /** @description Error (application/problem+json) */

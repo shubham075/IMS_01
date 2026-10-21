@@ -96,7 +96,10 @@
     "tooManyLines": "A transfer can have at most 100 products.",
     "oncePerProduct": "Each product can appear only once.",
     "notCountedTransfer": "This product is not counted, so it cannot be transferred.",
-    "pinOutsideIndia": "Place the pin inside India."
+    "pinOutsideIndia": "Place the pin inside India.",
+    "scanCode": "Type or scan a code.",
+    "scanCodeLong": "That code is too long.",
+    "scanCodeChars": "That code has characters we do not recognise."
   },
   "login": {
     "title": "Sign in to your shop",
@@ -205,7 +208,9 @@
       "products": "Products",
       "stock": "Stock",
       "transfers": "Transfers",
-      "import": "Import"
+      "import": "Import",
+      "scan": "Scan",
+      "counts": "Counts"
     },
     "switchShop": "Switch shop",
     "readOnly": "This shop is read-only until the subscription is renewed. You can view everything but not change it."
@@ -691,5 +696,74 @@
       "NO_ROWS": "The file has a header but no products.",
       "OTHER": "We could not read this file. Check it and try again."
     }
+  },
+  "scanner": {
+    "label": "Barcode or code",
+    "hint": "Scan with a barcode scanner, or type it and press Enter.",
+    "find": "Find",
+    "cameraOn": "Use the camera",
+    "cameraOff": "Turn the camera off",
+    "noScannerSupport": "This browser cannot read barcodes with the camera. Type the code or use a barcode scanner.",
+    "denied": "The camera is blocked. Allow it in the browser, or type the code instead.",
+    "noCamera": "We could not start the camera. Type the code instead.",
+    "preview": "Camera preview"
+  },
+  "scan": {
+    "title": "Scan",
+    "sub": "Scan or type a barcode to find a product, add it, or update its stock in a few taps.",
+    "needBranch": "Add a branch first.",
+    "addBranch": "Add a branch",
+    "branch": "Branch",
+    "recent": "Recent:",
+    "openProduct": "Open product",
+    "openStock": "Open stock",
+    "quickTitle": "Quick update",
+    "inCatalogue": "Found in our shared catalogue",
+    "notInShop": "You do not have a product with {code} yet.",
+    "addToShop": "Add to my shop",
+    "createOwn": "Create it myself instead",
+    "unknownTitle": "No product with this code",
+    "unknownBody": "We could not find {code} in your shop or in our catalogue.",
+    "createWithCode": "Create a product with this code"
+  },
+  "counts": {
+    "title": "Stock counts",
+    "sub": "Count what is on the shelves and correct the records. Sales can carry on while you count.",
+    "branch": "Branch",
+    "needBranch": "Add a branch first.",
+    "startHelp": "Start a count, then scan or type what you find.",
+    "openHelp": "A count is already in progress ({n} products counted).",
+    "start": "Start a count",
+    "continue": "Continue the count",
+    "past": "Earlier counts",
+    "none": "No counts yet.",
+    "products": "{n} products",
+    "status": {
+      "draft": "In progress",
+      "finalized": "Finished",
+      "abandoned": "Cancelled"
+    },
+    "detailTitle": "Stock count",
+    "finalizedBody": "Finished. {n} products were corrected.",
+    "abandonedBody": "This count was cancelled or expired. No stock was changed.",
+    "scanTitle": "Scan what you count",
+    "scanHelp": "Each scan adds one to that product. You can also type a number over a line below.",
+    "unknownCode": "No product with {code}. Add it to your shop first.",
+    "notCountable": "{name} is switched off or not counted, so it is left out.",
+    "counted": "{name}: {n} counted",
+    "countedTitle": "Counted so far: {n}",
+    "nothingYet": "Nothing counted yet.",
+    "expectedLine": "Records said {expected}",
+    "countedFor": "Counted: {name}",
+    "saveFor": "Save {name}",
+    "willCorrect": "Finishing will correct {n} products. The rest already match.",
+    "noDifferences": "Everything counted matches the records.",
+    "finish": "Finish count",
+    "finishConfirm": "Correct the stock to these numbers?",
+    "finishYes": "Yes, correct it",
+    "cancel": "Cancel count",
+    "cancelConfirm": "Cancel without changing any stock?",
+    "cancelYes": "Yes, cancel",
+    "no": "No"
   }
 }
